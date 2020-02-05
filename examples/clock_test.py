@@ -1,5 +1,5 @@
 # clock_test.py
-# 2020-02-04 Cedar Grove Studios
+# 2020-02-05 Cedar Grove Studios
 # uses cedargrove unit_converter library
 
 import time
@@ -7,8 +7,8 @@ import board
 import adafruit_ds3231
 from unit_converter.chronos       import adjust_dst
 from clock_display.repl_display   import ReplDisplay
-from clock_display.led_14x4seg    import Led14x4Display
-# from clock_display.led_7x4seg     import Led7x4Display
+from clock_display.led_14x4seg    import Led14x4Display  # 14-segment LED
+# from clock_display.led_7x4seg     import Led7x4Display  # 7-segment LED
 from clock_set_time.repl_set_time import ReplSetTime
 
 i2c = board.I2C()
@@ -21,17 +21,31 @@ clock_24_hour  = False            # 24-hour clock; 12-hour AM/PM
 clock_auto_dst = True             # Automatic US DST
 clock_alarm    = False            # Alarm is activated
 
-led_disp  = Led14x4Display(clock_zone, clock_24_hour, clock_auto_dst, clock_alarm, brightness=2, debug=False)
-# led_disp  = Led7x4Display(clock_zone, clock_24_hour, clock_auto_dst, clock_alarm, brightness=2, debug=False)
-repl_disp = ReplDisplay(clock_zone, clock_24_hour, clock_auto_dst, clock_alarm, debug=False)
+### Instatiate displays
+#  4-digit 14-segment LED alphanumeric display
+led_disp  = Led14x4Display(clock_zone, clock_24_hour, clock_auto_dst,
+                           clock_alarm, brightness=2, debug=False)
+
+#  4-digit 7-segment LED alphanumeric display
+# led_disp  = Led7x4Display(clock_zone, clock_24_hour, clock_auto_dst,
+#                           clock_alarm, brightness=2, debug=False)
+
+###  REPL display
+repl_disp = ReplDisplay(clock_zone, clock_24_hour, clock_auto_dst,
+                        clock_alarm, debug=False)
+
+### Instatiate time setter
+#  REPL time setter
 repl_set  = ReplSetTime(debug=False)
 
-### HELPERS ###
+### Instatiate chimes
+#  (none)
 
 # Manually set time upon RTC power failure
 if ds3231.lost_power:
     ds3231.datetime = repl_set.datetime
 
+# Clear all periodic task flags
 min_flag = half_flag = hour_flag = False
 
 while True:
@@ -44,10 +58,12 @@ while True:
 
     # update REPL display
     if "repl" in clock_display:
+        repl_disp.dst = is_dst
         repl_disp.show = current
 
     # update led display
     if "led" in clock_display:
+        led_disp.dst    = is_dst
         led_disp.colon  = not led_disp.colon
         led_disp.show   = current
 

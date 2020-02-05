@@ -3,12 +3,12 @@
 
 class ReplDisplay:
 
-    def __init__(self, timezone="Pacific", hour_24_12=False, dst=False,
-                 auto_dst=True, alarm=False, debug=False):
+    def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
+                 alarm=False, debug=False):
         #input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24_12
-        self._dst        = dst
+        self._dst        = False
         self._auto_dst   = auto_dst
         self._alarm      = alarm
 

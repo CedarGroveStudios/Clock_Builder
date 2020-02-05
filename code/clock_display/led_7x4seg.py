@@ -7,12 +7,12 @@ from adafruit_ht16k33.segments import Seg7x4
 
 class Led7x4Display:
 
-    def __init__(self, timezone="Pacific", hour_24_12=False, dst=False,
+    def __init__(self, timezone="Pacific", hour_24_12=False,
                  auto_dst=True, alarm=False, brightness=15, debug=False):
         #input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24_12
-        self._dst        = dst
+        self._dst        = False
         self._auto_dst   = auto_dst
         self._alarm      = alarm
         self._colon      = True
@@ -20,7 +20,7 @@ class Led7x4Display:
         self._weekday = ["Mon", "Tue", "Wed", "Thr", "Fri", "Sat", "Sun"]
 
         i2c = board.I2C()
-        self._display = Seg14x4(i2c, address=0x70)  # this will be the BPM display
+        self._display = Seg14x4(i2c, address=0x70)
         self._display.brightness = brightness
         self._display.fill(0)  # Clear the display
         self._display.print("----")
