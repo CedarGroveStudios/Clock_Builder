@@ -183,12 +183,12 @@ class DisplayioDisplay:
 
     @property
     def cursor(self):
-        """Cursor scale, visibility, and refresh. Default is visible, scale=1."""
-        return self._cursor_scale
+        """Cursor refresh and visibility. Default is visible (True)."""
+        return self._cursor_show
 
     @cursor.setter
-    def cursor(self, scale=1, show=True):
-        self._cursor_scale = scale
+    def cursor(self, show=True):
+        """Cursor refresh and visibility. Default is visible (True)."""
         self._cursor_show  = show
         self._mouse_cursor.scale = self._cursor_scale
         if self._cursor_show and self._mouse_cursor.hidden:
@@ -199,7 +199,7 @@ class DisplayioDisplay:
 
     @property
     def show(self):
-        """Display time via REPL."""
+        """Display time via Displayio"""
         return
 
     @show.setter
