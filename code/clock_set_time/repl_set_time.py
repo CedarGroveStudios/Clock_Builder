@@ -1,5 +1,5 @@
 # repl_set_time.py
-# 2020-02-01 Cedar Grove Studios
+# 2020-02-05 Cedar Grove Studios
 
 import time
 
@@ -23,7 +23,7 @@ class ReplSetTime:
     @property
     def datetime(self):
         """Manual input of time via REPL."""
-        print("REPL setting mode")
+        print("Enter time as 24-hour Standard Time")
         set_yr  = input("enter year (YYYY):")
         if set_yr == "":
             set_yr = int(2000)
@@ -42,7 +42,7 @@ class ReplSetTime:
         else:
             set_dom = max(1, min(31, int(set_dom)))
 
-        set_hr  = input("enter 24-hour clock hour (hh):")
+        set_hr  = input("enter 24-hour Standard Time hour (hh):")
         if set_hr == "":
             set_hr = 0
         else:

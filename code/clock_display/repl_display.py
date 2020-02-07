@@ -1,5 +1,5 @@
 # repl_display.py
-# 2020-02-01 Cedar Grove Studios
+# 2020-02-05 Cedar Grove Studios
 
 class ReplDisplay:
 
@@ -12,7 +12,7 @@ class ReplDisplay:
         self._auto_dst   = auto_dst
         self._alarm      = alarm
 
-        self._weekday = ["Mon", "Tue", "Wed", "Thr", "Fri", "Sat", "Sun"]
+        self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
         # debug parameters
         self._debug = debug
@@ -62,8 +62,8 @@ class ReplDisplay:
         return self._alarm
 
     @alarm.setter
-    def alarm(self, alarm):
-        self._dst = alarm
+    def alarm(self, alarm=False):
+        self._alarm = alarm
 
     @property
     def show(self):
@@ -88,6 +88,8 @@ class ReplDisplay:
             if hour >= 12:
                 hour = hour - 12
                 am_pm = "PM"
+            if hour == 0:  # midnight hour fix
+                hour = 12
 
         print("{} {}/{}/{}".format(self._weekday[self._datetime.tm_wday],
                                       self._datetime.tm_year,

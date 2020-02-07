@@ -1,5 +1,5 @@
 # led_7x4_display.py
-# 2020-02-04 Cedar Grove Studios
+# 2020-02-05 Cedar Grove Studios
 
 import time
 import board
@@ -17,10 +17,10 @@ class Led7x4Display:
         self._alarm      = alarm
         self._colon      = True
 
-        self._weekday = ["Mon", "Tue", "Wed", "Thr", "Fri", "Sat", "Sun"]
+        self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
         i2c = board.I2C()
-        self._display = Seg14x4(i2c, address=0x70)
+        self._display = Seg7x4(i2c, address=0x70)
         self._display.brightness = brightness
         self._display.fill(0)  # Clear the display
         self._display.print("----")
@@ -115,6 +115,8 @@ class Led7x4Display:
         if not self._hour_24_12:  # 12-hour
             if hour >= 12:
                 hour = hour - 12
+            if hour == 0:  # midnight hour fix
+                hour = 12
 
         if self._colon:
             self._display.print("{:02}:{:02}".format(hour, self._datetime.tm_min))
