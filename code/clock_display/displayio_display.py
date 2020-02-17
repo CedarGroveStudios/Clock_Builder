@@ -18,6 +18,7 @@ class DisplayioDisplay:
         self._auto_dst   = auto_dst
         self._alarm      = alarm
         self._brightness = brightness
+        self._colon      = True
 
         self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         self._month   = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
@@ -49,7 +50,7 @@ class DisplayioDisplay:
         GRAY    = 0x444455
 
         ### Define the display group ###
-        self._image_group = displayio.Group(max_size=12)
+        self._image_group = displayio.Group(max_size=15)
 
         # Create a background color fill layer; image_group[0]
         self._color_bitmap = displayio.Bitmap(WIDTH, HEIGHT, 1)
@@ -61,11 +62,29 @@ class DisplayioDisplay:
         self._image_group.append(self._background)
 
         # Define labels and values using element grid coordinates
-        self._clock_digits = Label(self._font_1, text="06:23",
+        """self._clock_digits = Label(self._font_1, text="06:23",
                                    color=WHITE, max_glyphs=5)
         self._clock_digits.x = 30
         self._clock_digits.y = HEIGHT // 2
-        self._image_group.append(self._clock_digits)  # image_group[xx]
+        self._image_group.append(self._clock_digits)  # image_group[xx]"""
+
+        self._clock_digits_hour = Label(self._font_1, text="06",
+                                   color=WHITE, max_glyphs=2)
+        self._clock_digits_hour.x = 30
+        self._clock_digits_hour.y = HEIGHT // 2
+        self._image_group.append(self._clock_digits_hour)  # image_group[xx]
+
+        self._clock_digits_min = Label(self._font_1, text="23",
+                                   color=WHITE, max_glyphs=2)
+        self._clock_digits_min.x = 84
+        self._clock_digits_min.y = HEIGHT // 2
+        self._image_group.append(self._clock_digits_min)  # image_group[xx]
+
+        self._clock_digits_colon = Label(self._font_1, text=":",
+                                   color=WHITE, max_glyphs=1)
+        self._clock_digits_colon.x = 72
+        self._clock_digits_colon.y = (HEIGHT // 2) - 3
+        self._image_group.append(self._clock_digits_colon)  # image_group[xx]
 
         self._clock_daydate = Label(self._font_0, text="Wed 02/05/2020",
                                     color=YELLOW, max_glyphs=16)
@@ -166,6 +185,20 @@ class DisplayioDisplay:
         board.DISPLAY.brightness = self._brightness
 
     @property
+    def colon(self):
+        """Display the colon."""
+        return self._colon
+
+    @colon.setter
+    def colon(self, colon=True):
+        """Display the colon."""
+        self._colon = colon
+        if self._colon:
+            self._clock_digits_colon.text = ":"
+        else:
+            self._clock_digits_colon.text = ""
+
+    @property
     def show(self):
         """Display time via REPL."""
         return
@@ -206,7 +239,13 @@ class DisplayioDisplay:
                                                                  self._month[self._datetime.tm_mon - 1],
                                                                  self._datetime.tm_mday,
                                                                  self._datetime.tm_year)
-        self._clock_digits.text = "{:02}:{:02}".format(self._hour, self._datetime.tm_min)
+        #self._clock_digits.text = "{:02}:{:02}".format(self._hour, self._datetime.tm_min)
+        self._clock_digits_hour.text = "{:02}".format(self._hour)
+        self._clock_digits_min.text = "{:02}".format(self._datetime.tm_min)
+        if self._colon:
+            self._clock_digits_colon.text = ":"
+        else:
+            self._clock_digits_colon.text = ""
 
         # Activate display
         board.DISPLAY.show(self._image_group)
