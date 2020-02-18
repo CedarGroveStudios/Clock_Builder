@@ -5,8 +5,10 @@ import time
 import board
 import displayio
 from adafruit_display_text.label import Label
-from adafruit_bitmap_font import bitmap_font
+from adafruit_bitmap_font        import bitmap_font
 import adafruit_imageload
+from adafruit_pybadger import PyBadger
+from simpleio                    import map_range
 
 class DisplayioDisplay:
 
@@ -30,6 +32,11 @@ class DisplayioDisplay:
         # Load the text font from the fonts folder
         self._font_0 = bitmap_font.load_font("/fonts/OpenSans-9.bdf")
         self._font_1 = bitmap_font.load_font("/fonts/Helvetica-Bold-36.bdf")
+
+        # Instantiate PyBadger instance
+        self.panel = PyBadger(pixels_brightness=0.1)  # Set default NeoPixel brightness
+        self.panel.pixels.fill(0)                     # Clear all NeoPixels
+        self.panel.play_tone(440, 0.1)                # A4 welcome tone
 
         # The board's integral display size
         WIDTH  = board.DISPLAY.width   # 160 for PyGamer and PyBadge
@@ -80,14 +87,14 @@ class DisplayioDisplay:
 
         ### Define labels and values using element grid coordinates
         # Clock digits grouping
-        self._clock_digits_hour = Label(self._font_1, text="06",
+        self._clock_digits_hour = Label(self._font_1, text="--",
                                         color=WHITE, max_glyphs=2)
         self._clock_digits_hour.x = 20
         self._clock_digits_hour.y = (HEIGHT // 2) + 10
         self._image_group.append(self._clock_digits_hour)  # image_group[xx]
         self._label_restore_color.append(WHITE)
 
-        self._clock_digits_min = Label(self._font_1, text="23",
+        self._clock_digits_min = Label(self._font_1, text="--",
                                        color=WHITE, max_glyphs=2)
         self._clock_digits_min.x = 74
         self._clock_digits_min.y = (HEIGHT // 2) + 10
@@ -102,28 +109,28 @@ class DisplayioDisplay:
         self._label_restore_color.append(WHITE)
 
         # Day Date grouping
-        self._clock_wday = Label(self._font_0, text="Wed",
+        self._clock_wday = Label(self._font_0, text="---",
                                  color=YELLOW, max_glyphs=3)
         self._clock_wday.x = 23
         self._clock_wday.y = 40
         self._image_group.append(self._clock_wday)  # image_group[xx]
         self._label_restore_color.append(YELLOW)
 
-        self._clock_month = Label(self._font_0, text="Feb",
+        self._clock_month = Label(self._font_0, text="---",
                                   color=YELLOW, max_glyphs=3)
         self._clock_month.x = 23 + 35
         self._clock_month.y = 40
         self._image_group.append(self._clock_month)  # image_group[xx]
         self._label_restore_color.append(YELLOW)
 
-        self._clock_mday = Label(self._font_0, text="05,",
+        self._clock_mday = Label(self._font_0, text="--,",
                                  color=YELLOW, max_glyphs=3)
         self._clock_mday.x = 23 + 60
         self._clock_mday.y = 40
         self._image_group.append(self._clock_mday)  # image_group[xx]
         self._label_restore_color.append(YELLOW)
 
-        self._clock_year = Label(self._font_0, text="2020",
+        self._clock_year = Label(self._font_0, text="----",
                                  color=YELLOW, max_glyphs=4)
         self._clock_year.x = 23 + 82
         self._clock_year.y = 40
@@ -131,7 +138,7 @@ class DisplayioDisplay:
         self._label_restore_color.append(YELLOW)
 
         # AM/PM indicator
-        self._clock_ampm = Label(self._font_0, text="PM",
+        self._clock_ampm = Label(self._font_0, text="--",
                                  color=WHITE, max_glyphs=2)
         self._clock_ampm.x = 120
         self._clock_ampm.y = (HEIGHT // 2) + 10 - 8
@@ -139,7 +146,7 @@ class DisplayioDisplay:
         self._label_restore_color.append(WHITE)
 
         # Time Zone indicator
-        self._clock_dst = Label(self._font_0, text="PST",
+        self._clock_dst = Label(self._font_0, text="---",
                                 color=VIOLET, max_glyphs=3)
         self._clock_dst.x = 120
         self._clock_dst.y = (HEIGHT // 2) + 10 + 8
@@ -147,15 +154,15 @@ class DisplayioDisplay:
         self._label_restore_color.append(VIOLET)
 
         # Automatic DST indicator
-        self._clock_auto_dst = Label(self._font_0, text="AutoDST",
+        self._clock_auto_dst = Label(self._font_0, text="-------",
                                      color=VIOLET, max_glyphs=7)
-        self._clock_auto_dst.x = 95
+        self._clock_auto_dst.x = 104
         self._clock_auto_dst.y = HEIGHT - 8
         self._image_group.append(self._clock_auto_dst)  # image_group[xx]
         self._label_restore_color.append(VIOLET)
 
         # Alarm indicator
-        self._clock_alarm = Label(self._font_0, text="ALARM",
+        self._clock_alarm = Label(self._font_0, text="-----",
                                   color=ORANGE, max_glyphs=5)
         self._clock_alarm.x = 5
         self._clock_alarm.y = HEIGHT - 8
@@ -170,8 +177,8 @@ class DisplayioDisplay:
         self._image_group.append(self._clock_name)  # image_group[xx]
         self._label_restore_color.append(VIOLET)
 
-        board.DISPLAY.show(self._image_group)  # Load display
-        time.sleep(0.1)  # Allow display to load
+        # board.DISPLAY.show(self._image_group)  # Load display
+        # time.sleep(0.1)  # Allow display to load
 
         # debug parameters
         self._debug = debug
@@ -254,9 +261,10 @@ class DisplayioDisplay:
         return self._batt_level
 
     @battery.setter
-    def battery(self, level=0):
+    def battery(self, volts=0):
         """Display the battery icon."""
-        self._batt_level = level
+        self._batt_volts = volts
+        self._batt_level = int(map_range(self._batt_volts, 3.3, 4.2, 5, 0))
         self._batt_icon[0] = self._batt_level
 
     def show(self, datetime):
@@ -301,10 +309,13 @@ class DisplayioDisplay:
             self._clock_digits_colon.text = ":"
         else:
             self._clock_digits_colon.text = ""
+
+        board.DISPLAY.show(self._image_group)  # Load display
+        time.sleep(0.1)  # Allow display to load
         return
 
-    def dim(self, color=0x444455):
-        """Dim all image group text elements to GRAY."""
+    def dim(self, color=0x0000FF):
+        """Dim all image group text elements to BLUE."""
         for i in range(2, len(self._label_restore_color)):
             self._image_group[i].color = color
         return
@@ -314,3 +325,94 @@ class DisplayioDisplay:
         for i in range(2, len(self._label_restore_color)):
             self._image_group[i].color = self._label_restore_color[i]
         return
+
+    @property
+    def set_datetime(self):
+        """Manual input of time via PyBadge DisplayIO."""
+
+        if not self.panel.button.start:
+            return False
+        while self.panel.button.start:
+            pass
+        self.panel.play_tone(784, 0.030)  # G5
+
+        self.dim()
+        # Select parameter to change
+        while not self.panel.button.start:
+            while (not self.panel.button.a) and (not self.panel.button.start):
+                if self.panel.button.up:
+                    print("up")
+                if self.panel.button.down:
+                    print("down")
+                time.sleep(.5)
+
+            if self.panel.button.a:  # "select" button pressed
+                self.panel.play_tone(1319, 0.030)  # E6
+            while self.panel.button.a:  # Wait for button release
+                pass
+
+            # Adjust parameter value
+            while (not self.panel.button.a) and (not self.panel.button.start):
+                if self.panel.button.up:
+                    print("up")
+                if self.panel.button.down:
+                    print("down")
+                time.sleep(.5)
+
+            if self.panel.button.a:  # "select" button pressed
+                self.panel.play_tone(1319, 0.030)  # E6
+            while self.panel.button.a:  # Wait for button release
+                pass
+
+        # Exit setup process
+        if self.panel.button.start:  # Start button pressed
+            self.panel.play_tone(784, 0.030)  # G5
+        while self.panel.button.start:  # Wait for button release
+            pass
+
+        self.restore()
+
+
+        """print("Enter time as 24-hour Standard Time")
+        set_yr  = input("enter year (YYYY):")
+        if set_yr == "":
+            set_yr = int(2000)
+        else:
+            set_yr = max(2000, min(2037, int(set_yr)))
+
+        set_mon = input("enter month (MM):")
+        if set_mon == "":
+            set_mon = 1
+        else:
+            set_mon = max(1, min(12, int(set_mon)))
+
+        set_dom = input("enter day-of-month (DD):")
+        if set_dom == "":
+            set_dom = 1
+        else:
+            set_dom = max(1, min(31, int(set_dom)))
+
+        set_hr  = input("enter 24-hour Standard Time hour (hh):")
+        if set_hr == "":
+            set_hr = 0
+        else:
+            set_hr = max(0, min(24, int(set_hr)))
+
+        set_min = input("enter minute (mm):")
+        if set_min == "":
+            set_min = 0
+        else:
+            set_min = max(0, min(59, int(set_min)))
+
+        # Build structured time:         ((year, mon, date, hour,
+        #                                  min, sec, wday, yday, isdst))
+        self._datetime = time.struct_time((set_yr, set_mon, set_dom, set_hr,
+                                           set_min, 0, -1, -1, -1))
+
+        # Fix weekday and yearday structured time errors
+        self._datetime = time.localtime(time.mktime(self._datetime))"""
+        return self._datetime
+
+    @set_datetime.setter
+    def set_datetime(self):
+        return self._datetime
