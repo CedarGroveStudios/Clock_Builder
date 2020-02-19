@@ -1,5 +1,5 @@
 # displayio_display.py
-# 2020-02-19 Cedar Grove Studios
+# 2020-02-17 Cedar Grove Studios
 
 import time
 import board
@@ -26,7 +26,6 @@ class DisplayioDisplay:
         self._name       = "Musique_Concrete"
         self._colon      = True
         self._batt_level = 5
-        self._label_range = []  # label edit ranges
         self._label_restore_color = []  # for restoring text color values
 
         self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -76,7 +75,6 @@ class DisplayioDisplay:
                                               x=0, y=0)
         self._image_group.append(self._background)
         self._label_restore_color.append(self._DK_VIO)
-        self._label_range.append(None)
 
         # Battery indicator tile grid; image_group[1]
         self._sprite_sheet, self._palette = adafruit_imageload.load("/clock_display/batt_sprite_sheet.bmp",
@@ -90,125 +88,104 @@ class DisplayioDisplay:
         self._batt_icon.y = 1
         self._image_group.append(self._batt_icon)
         self._label_restore_color.append(self._BLACK)
-        self._label_range.append(None)
 
         ### Define labels and values using element grid coordinates
-        # Colon; image_group[2]
+        # Colon
         self._clock_digits_colon = Label(self._font_1, text=":",
                                          color=self._WHITE, max_glyphs=1)
         self._clock_digits_colon.x = 62
         self._clock_digits_colon.y = (HEIGHT // 2) + 10 - 3
-        self._image_group.append(self._clock_digits_colon)
-        self._label_restore_color.append(self._clock_digits_colon.color)
-        self._label_range.append(None)
+        self._image_group.append(self._clock_digits_colon)  # image_group[2]
+        self._label_restore_color.append(self._WHITE)
 
-        # Weekday; image_group[3]
+        # Weekday
         self._clock_wday = Label(self._font_0, text="---",
                                  color=self._YELLOW, max_glyphs=3)
         self._clock_wday.x = 23
         self._clock_wday.y = 40
-        self._image_group.append(self._clock_wday)
-        self._label_restore_color.append(self._clock_wday.color)
-        self._label_range.append(None)
+        self._image_group.append(self._clock_wday)  # image_group[3]
+        self._label_restore_color.append(self._YELLOW)
 
-        # Month Day (date) comma; image_group[4]
-        self._clock_comma = Label(self._font_0, text=",",
-                                  color=self._YELLOW, max_glyphs=1)
-        self._clock_comma.x = 23 + 76
-        self._clock_comma.y = 40
-        self._image_group.append(self._clock_comma)
-        self._label_restore_color.append(self._clock_comma.color)
-        self._label_range.append(None)
-
-        # AM/PM indicator; image_group[5]
+        # AM/PM indicator
         self._clock_ampm = Label(self._font_0, text="--",
                                  color=self._WHITE, max_glyphs=2)
         self._clock_ampm.x = 120
         self._clock_ampm.y = (HEIGHT // 2) + 10 - 8
-        self._image_group.append(self._clock_ampm)
-        self._label_restore_color.append(self._clock_ampm.color)
-        self._label_range.append(None)
+        self._image_group.append(self._clock_ampm)  # image_group[4]
+        self._label_restore_color.append(self._WHITE)
 
-        # Time Zone indicator; image_group[6]
+        # Time Zone indicator
         self._clock_dst = Label(self._font_0, text="---",
                                 color=self._VIOLET, max_glyphs=3)
         self._clock_dst.x = 120
         self._clock_dst.y = (HEIGHT // 2) + 10 + 8
-        self._image_group.append(self._clock_dst)
-        self._label_restore_color.append(self._clock_dst.color)
-        self._label_range.append(None)
+        self._image_group.append(self._clock_dst)  # image_group[5]
+        self._label_restore_color.append(self._VIOLET)
 
-        # Hour; image_group[7]
+        # Hour
         self._clock_digits_hour = Label(self._font_1, text="--",
                                         color=self._WHITE, max_glyphs=2)
         self._clock_digits_hour.x = 20
         self._clock_digits_hour.y = (HEIGHT // 2) + 10
-        self._image_group.append(self._clock_digits_hour)
-        self._label_restore_color.append(self._clock_digits_hour.color)
-        self._label_range.append((0, 23))
+        self._image_group.append(self._clock_digits_hour)  # image_group[6]
+        self._label_restore_color.append(self._WHITE)
 
-        # Minutes; image_group[8]
+        # Minutes
         self._clock_digits_min = Label(self._font_1, text="--",
                                        color=self._WHITE, max_glyphs=2)
         self._clock_digits_min.x = 74
         self._clock_digits_min.y = (HEIGHT // 2) + 10
-        self._image_group.append(self._clock_digits_min)
-        self._label_restore_color.append(self._clock_digits_min.color)
-        self._label_range.append((0, 59))
+        self._image_group.append(self._clock_digits_min)  # image_group[7]
+        self._label_restore_color.append(self._WHITE)
 
-        # Month; image_group[9]
+        # Month
         self._clock_month = Label(self._font_0, text="---",
                                   color=self._YELLOW, max_glyphs=3)
         self._clock_month.x = 23 + 35
         self._clock_month.y = 40
-        self._image_group.append(self._clock_month)
-        self._label_restore_color.append(self._clock_month.color)
-        self._label_range.append((1, 12))
+        self._image_group.append(self._clock_month)  # image_group[8]
+        self._label_restore_color.append(self._YELLOW)
 
-        # Month Day (date); image_group[10]
-        self._clock_mday = Label(self._font_0, text="--",
-                                 color=self._YELLOW, max_glyphs=2)
+        self._clock_mday = Label(self._font_0, text="--,",
+                                 color=self._YELLOW, max_glyphs=3)
         self._clock_mday.x = 23 + 60
         self._clock_mday.y = 40
-        self._image_group.append(self._clock_mday)
-        self._label_restore_color.append(self._clock_mday.color)
-        self._label_range.append((1, 31))
+        self._image_group.append(self._clock_mday)  # image_group[9]
+        self._label_restore_color.append(self._YELLOW)
 
-        # Year; image_group[11]
         self._clock_year = Label(self._font_0, text="----",
                                  color=self._YELLOW, max_glyphs=4)
         self._clock_year.x = 23 + 82
         self._clock_year.y = 40
-        self._image_group.append(self._clock_year)
-        self._label_restore_color.append(self._clock_year.color)
-        self._label_range.append((2000, 2037))
+        self._image_group.append(self._clock_year)  # image_group[10]
+        self._label_restore_color.append(self._YELLOW)
 
-        # Alarm indicator; image_group[12]
+        # Alarm indicator
         self._clock_alarm = Label(self._font_0, text="-----",
                                   color=self._ORANGE, max_glyphs=5)
         self._clock_alarm.x = 5
         self._clock_alarm.y = HEIGHT - 8
-        self._image_group.append(self._clock_alarm)
-        self._label_restore_color.append(self._clock_alarm.color)
-        self._label_range.append((0, 1))
+        self._image_group.append(self._clock_alarm)  # image_group[11]
+        self._label_restore_color.append(self._ORANGE)
 
-        # Automatic DST indicator; image_group[13]
+        # Automatic DST indicator
         self._clock_auto_dst = Label(self._font_0, text="-------",
                                      color=self._VIOLET, max_glyphs=7)
         self._clock_auto_dst.x = 104
         self._clock_auto_dst.y = HEIGHT - 8
-        self._image_group.append(self._clock_auto_dst)
-        self._label_restore_color.append(self._clock_auto_dst.color)
-        self._label_range.append((0, 1))
+        self._image_group.append(self._clock_auto_dst)  # image_group[12]
+        self._label_restore_color.append(self._VIOLET)
 
-        # Clock Name indicator; image_group[14]
+        # Clock Name indicator
         self._clock_name = Label(self._font_0, text="",
                                  color=self._VIOLET, max_glyphs=20)
         self._clock_name.x = 5
         self._clock_name.y = 5
-        self._image_group.append(self._clock_name)
-        self._label_restore_color.append(self._clock_name.color)
-        self._label_range.append(None)
+        self._image_group.append(self._clock_name)  # image_group[13]
+        self._label_restore_color.append(self._VIOLET)
+
+        # board.DISPLAY.show(self._image_group)  # Load display
+        # time.sleep(0.1)  # Allow display to load
 
         # debug parameters
         self._debug = debug
@@ -293,8 +270,8 @@ class DisplayioDisplay:
     @battery.setter
     def battery(self, volts=0):
         """Display the battery icon."""
-        self._batt_volts   = volts
-        self._batt_level   = int(map_range(self._batt_volts, 3.3, 4.2, 5, 0))
+        self._batt_volts = volts
+        self._batt_level = int(map_range(self._batt_volts, 3.3, 4.2, 5, 0))
         self._batt_icon[0] = self._batt_level
 
     def show(self, datetime):
@@ -316,10 +293,10 @@ class DisplayioDisplay:
             self._clock_ampm.text = "  "
         else:  # 12-hour clock with AM/PM
             self._clock_ampm.text = "AM"
-            if self._hour  >= 12:
+            if self._hour >= 12:
                 self._hour = self._hour - 12
                 self._clock_ampm.text = "PM"
-            if self._hour  == 0:  # midnight hour fix
+            if self._hour == 0:  # midnight hour fix
                 self._hour = 12
 
         if self._alarm:
@@ -330,11 +307,11 @@ class DisplayioDisplay:
         self._clock_name.text  = self._name
         self._clock_wday.text  = self._weekday[self._datetime.tm_wday]
         self._clock_month.text = self._month[self._datetime.tm_mon - 1]
-        self._clock_mday.text  = "{:02d}".format(self._datetime.tm_mday)
+        self._clock_mday.text  = "{:02d},".format(self._datetime.tm_mday)
         self._clock_year.text  = "{:04d}".format(self._datetime.tm_year)
 
         self._clock_digits_hour.text = "{:02}".format(self._hour)
-        self._clock_digits_min.text  = "{:02}".format(self._datetime.tm_min)
+        self._clock_digits_min.text = "{:02}".format(self._datetime.tm_min)
         if self._colon:
             self._clock_digits_colon.text = ":"
         else:
@@ -381,7 +358,7 @@ class DisplayioDisplay:
                     self._param_index = self._param_index - 1
                 if self.panel.button.right:
                     self._param_index = self._param_index + 1
-                self._param_index = max(7, min(13, self._param_index))
+                self._param_index = max(6, min(12, self._param_index))
                 self._image_group[self._param_index].color = self._WHITE
                 time.sleep(0.2)
                 self._image_group[self._param_index].color = self._BLUE
@@ -401,9 +378,7 @@ class DisplayioDisplay:
                 if self.panel.button.down:
                     self._param_value = self._param_value - 1
 
-                self._param_min   = self._label_range[self._param_index][0]
-                self._param_max   = self._label_range[self._param_index][1]
-                self._param_value = max(self._param_min, min(self._param_max, self._param_value))
+                self._param_value = max(0, min(59, self._param_value))
                 self._image_group[self._param_index].text = str("{:02}".format(self._param_value))
                 time.sleep(.25)
 
