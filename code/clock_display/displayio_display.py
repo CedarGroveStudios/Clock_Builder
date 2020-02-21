@@ -316,7 +316,7 @@ class DisplayioDisplay:
     def battery(self, volts=0):
         """Display the battery icon."""
         self._batt_volts   = volts
-        self._batt_level   = int(map_range(self._batt_volts, 3.3, 4.2, 5, 0))
+        self._batt_level   = int(map_range(self._batt_volts, 3.35, 4.15, 0, 5))
         self._batt_icon[0] = self._batt_level
 
     def show(self, datetime):
