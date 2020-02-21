@@ -51,18 +51,18 @@ class DisplayioDisplay:
         board.DISPLAY.brightness = self._brightness
 
         # Default colors
-        self._BLACK   = 0x000000
-        self._RED     = 0xFF0000
-        self._ORANGE  = 0xFF8811
-        self._YELLOW  = 0xFFFF00
-        self._GREEN   = 0x00FF00
-        self._CYAN    = 0x00FFFF
-        self._BLUE    = 0x0000FF
-        self._LT_BLUE = 0x000044
-        self._VIOLET  = 0x9900FF
-        self._DK_VIO  = 0x110022
-        self._WHITE   = 0xFFFFFF
-        self._GRAY    = 0x444455
+        self.BLACK   = 0x000000
+        self.RED     = 0xFF0000
+        self.ORANGE  = 0xFF8811
+        self.YELLOW  = 0xFFFF00
+        self.GREEN   = 0x00FF00
+        self.CYAN    = 0x00FFFF
+        self.BLUE    = 0x0000FF
+        self.LT_BLUE = 0x000044
+        self.VIOLET  = 0x9900FF
+        self.DK_VIO  = 0x110022
+        self.WHITE   = 0xFFFFFF
+        self.GRAY    = 0x444455
 
         ### Define the display group ###
         self._image_group = displayio.Group(max_size=15)
@@ -70,12 +70,12 @@ class DisplayioDisplay:
         # Create a background color fill layer; image_group[0]
         self._color_bitmap = displayio.Bitmap(WIDTH, HEIGHT, 1)
         self._color_palette = displayio.Palette(1)
-        self._color_palette[0] = self._DK_VIO
+        self._color_palette[0] = self.DK_VIO
         self._background = displayio.TileGrid(self._color_bitmap,
                                               pixel_shader=self._color_palette,
                                               x=0, y=0)
         self._image_group.append(self._background)
-        self._label_restore_color.append(self._DK_VIO)
+        self._label_restore_color.append(self.DK_VIO)
         self._label_edits.append(None)
 
         # Battery indicator tile grid; image_group[1]
@@ -89,13 +89,13 @@ class DisplayioDisplay:
         self._batt_icon.x = WIDTH - 16
         self._batt_icon.y = 1
         self._image_group.append(self._batt_icon)
-        self._label_restore_color.append(self._BLACK)
+        self._label_restore_color.append(self.BLACK)
         self._label_edits.append(None)
 
         ### Define labels and values using element grid coordinates
         # Colon; image_group[2]
         self._clock_digits_colon = Label(self._font_1, text=":",
-                                         color=self._WHITE, max_glyphs=1)
+                                         color=self.WHITE, max_glyphs=1)
         self._clock_digits_colon.x = 62
         self._clock_digits_colon.y = (HEIGHT // 2) + 10 - 3
         self._image_group.append(self._clock_digits_colon)
@@ -104,17 +104,17 @@ class DisplayioDisplay:
 
         # Weekday; image_group[3]
         self._clock_wday = Label(self._font_0, text="---",
-                                 color=self._YELLOW, max_glyphs=3)
-        self._clock_wday.x = 23
+                                 color=self.YELLOW, max_glyphs=3)
+        self._clock_wday.x = 21
         self._clock_wday.y = 40
         self._image_group.append(self._clock_wday)
         self._label_restore_color.append(self._clock_wday.color)
         self._label_edits.append(None)
 
-        # Month Day (date) comma; image_group[4]
+        # Comma for Month Day (date); image_group[4]
         self._clock_comma = Label(self._font_0, text=",",
-                                  color=self._YELLOW, max_glyphs=1)
-        self._clock_comma.x = 23 + 76
+                                  color=self.YELLOW, max_glyphs=1)
+        self._clock_comma.x = 99
         self._clock_comma.y = 40
         self._image_group.append(self._clock_comma)
         self._label_restore_color.append(self._clock_comma.color)
@@ -122,7 +122,7 @@ class DisplayioDisplay:
 
         # AM/PM indicator; image_group[5]
         self._clock_ampm = Label(self._font_0, text="--",
-                                 color=self._WHITE, max_glyphs=2)
+                                 color=self.WHITE, max_glyphs=2)
         self._clock_ampm.x = 120
         self._clock_ampm.y = (HEIGHT // 2) + 10 - 8
         self._image_group.append(self._clock_ampm)
@@ -131,35 +131,35 @@ class DisplayioDisplay:
 
         # Time Zone indicator; image_group[6]
         self._clock_dst = Label(self._font_0, text="---",
-                                color=self._VIOLET, max_glyphs=3)
+                                color=self.VIOLET, max_glyphs=3)
         self._clock_dst.x = 120
         self._clock_dst.y = (HEIGHT // 2) + 10 + 8
         self._image_group.append(self._clock_dst)
         self._label_restore_color.append(self._clock_dst.color)
         self._label_edits.append(None)
 
-        # Hour; image_group[7]
-        self._clock_digits_hour = Label(self._font_1, text="--",
-                                        color=self._WHITE, max_glyphs=2)
-        self._clock_digits_hour.x = 20
-        self._clock_digits_hour.y = (HEIGHT // 2) + 10
-        self._image_group.append(self._clock_digits_hour)
-        self._label_restore_color.append(self._clock_digits_hour.color)
-        self._label_edits.append(("int2", 0, 23))
+        # Alarm indicator; image_group[7]
+        self._clock_alarm = Label(self._font_0, text="-----",
+                                  color=self.ORANGE, max_glyphs=5)
+        self._clock_alarm.x = 5
+        self._clock_alarm.y = HEIGHT - 8
+        self._image_group.append(self._clock_alarm)
+        self._label_restore_color.append(self._clock_alarm.color)
+        self._label_edits.append(("boolean", 0, 1))
 
-        # Minutes; image_group[8]
-        self._clock_digits_min = Label(self._font_1, text="--",
-                                       color=self._WHITE, max_glyphs=2)
-        self._clock_digits_min.x = 74
-        self._clock_digits_min.y = (HEIGHT // 2) + 10
-        self._image_group.append(self._clock_digits_min)
-        self._label_restore_color.append(self._clock_digits_min.color)
-        self._label_edits.append(("int2", 0, 59))
+        # Automatic DST indicator; image_group[8]
+        self._clock_auto_dst = Label(self._font_0, text="-------",
+                                     color=self.VIOLET, max_glyphs=7)
+        self._clock_auto_dst.x = 104
+        self._clock_auto_dst.y = HEIGHT - 8
+        self._image_group.append(self._clock_auto_dst)
+        self._label_restore_color.append(self._clock_auto_dst.color)
+        self._label_edits.append(("boolean", 0 , 1))
 
         # Month; image_group[9]
         self._clock_month = Label(self._font_0, text="---",
-                                  color=self._YELLOW, max_glyphs=3)
-        self._clock_month.x = 23 + 35
+                                  color=self.YELLOW, max_glyphs=3)
+        self._clock_month.x = 55
         self._clock_month.y = 40
         self._image_group.append(self._clock_month)
         self._label_restore_color.append(self._clock_month.color)
@@ -167,8 +167,8 @@ class DisplayioDisplay:
 
         # Month Day (date); image_group[10]
         self._clock_mday = Label(self._font_0, text="--",
-                                 color=self._YELLOW, max_glyphs=2)
-        self._clock_mday.x = 23 + 60
+                                 color=self.YELLOW, max_glyphs=2)
+        self._clock_mday.x = 83
         self._clock_mday.y = 40
         self._image_group.append(self._clock_mday)
         self._label_restore_color.append(self._clock_mday.color)
@@ -176,34 +176,34 @@ class DisplayioDisplay:
 
         # Year; image_group[11]
         self._clock_year = Label(self._font_0, text="----",
-                                 color=self._YELLOW, max_glyphs=4)
-        self._clock_year.x = 23 + 82
+                                 color=self.YELLOW, max_glyphs=4)
+        self._clock_year.x = 105
         self._clock_year.y = 40
         self._image_group.append(self._clock_year)
         self._label_restore_color.append(self._clock_year.color)
         self._label_edits.append(("int4", 2000, 2037))
 
-        # Alarm indicator; image_group[12]
-        self._clock_alarm = Label(self._font_0, text="-----",
-                                  color=self._ORANGE, max_glyphs=5)
-        self._clock_alarm.x = 5
-        self._clock_alarm.y = HEIGHT - 8
-        self._image_group.append(self._clock_alarm)
-        self._label_restore_color.append(self._clock_alarm.color)
-        self._label_edits.append(("boolean", 0, 1))
+        # Hour; image_group[12]
+        self._clock_digits_hour = Label(self._font_1, text="--",
+                                        color=self.WHITE, max_glyphs=2)
+        self._clock_digits_hour.x = 20
+        self._clock_digits_hour.y = (HEIGHT // 2) + 10
+        self._image_group.append(self._clock_digits_hour)
+        self._label_restore_color.append(self._clock_digits_hour.color)
+        self._label_edits.append(("int2", 0, 23))
 
-        # Automatic DST indicator; image_group[13]
-        self._clock_auto_dst = Label(self._font_0, text="-------",
-                                     color=self._VIOLET, max_glyphs=7)
-        self._clock_auto_dst.x = 104
-        self._clock_auto_dst.y = HEIGHT - 8
-        self._image_group.append(self._clock_auto_dst)
-        self._label_restore_color.append(self._clock_auto_dst.color)
-        self._label_edits.append(("boolean", 0 , 1))
+        # Minutes; image_group[13]
+        self._clock_digits_min = Label(self._font_1, text="--",
+                                       color=self.WHITE, max_glyphs=2)
+        self._clock_digits_min.x = 74
+        self._clock_digits_min.y = (HEIGHT // 2) + 10
+        self._image_group.append(self._clock_digits_min)
+        self._label_restore_color.append(self._clock_digits_min.color)
+        self._label_edits.append(("int2", 0, 59))
 
         # Clock Name indicator; image_group[14]
         self._clock_name = Label(self._font_0, text="",
-                                 color=self._VIOLET, max_glyphs=20)
+                                 color=self.VIOLET, max_glyphs=20)
         self._clock_name.x = 5
         self._clock_name.y = 5
         self._image_group.append(self._clock_name)
@@ -215,6 +215,28 @@ class DisplayioDisplay:
         if self._debug:
             print("*Init:", self.__class__)
             print("*Init: ", self.__dict__)
+
+    @property
+    def message(self):
+        """Place message in clock name area."""
+        return self._clock_name.text
+
+    @message.setter
+    def message(self, text=""):
+        self._msg_text = text[:20]
+        if self._msg_text == "":
+            self._clock_name.text = self._name
+        else:
+            self._clock_name.color = self.RED
+            self._clock_name.text = self._msg_text
+            self.panel.play_tone(880, 0.100)  # A5
+            self._clock_name.color = self.YELLOW
+            self.panel.play_tone(880, 0.100)  # A5
+            self._clock_name.color = self.RED
+            self.panel.play_tone(880, 0.100)  # A5
+            self._clock_name.color = self.YELLOW
+            time.sleep(1)
+            self._clock_name.color = self.VIOLET
 
     @property
     def zone(self):
@@ -259,7 +281,7 @@ class DisplayioDisplay:
 
     @alarm.setter
     def alarm(self, alarm=False):
-        self._dst = alarm
+        self._alarm = alarm
 
     @property
     def brightness(self):
@@ -309,7 +331,7 @@ class DisplayioDisplay:
         if self._auto_dst:
             self._clock_auto_dst.text = "AutoDST"
         else:
-            self._clock_auto_dst.text = "       "
+            self._clock_auto_dst.text = ""
 
         self._hour = self._datetime.tm_hour  # Format for 24-hour or 12-hour output
         if self._hour_24_12:  # 24-hour
@@ -325,7 +347,7 @@ class DisplayioDisplay:
         if self._alarm:
             self._clock_alarm.text = "ALARM"
         else:
-            self._clock_alarm.text = "     "
+            self._clock_alarm.text = ""
 
         self._clock_name.text  = self._name
         self._clock_wday.text  = self._weekday[self._datetime.tm_wday]
@@ -344,6 +366,11 @@ class DisplayioDisplay:
         time.sleep(0.1)  # Allow display to load
         return
 
+    def tick(self):
+        """Play tick sound."""
+        self.panel.play_file("/clock_display/tick_soft.wav")
+        return
+
     def dim(self, color=0X0000FF):
         """Dim all image group text elements to BLUE."""
         for i in range(2, len(self._label_restore_color)):
@@ -356,12 +383,12 @@ class DisplayioDisplay:
             self._image_group[i].color = self._label_restore_color[i]
         return
 
-    def set_datetime(self, datetime):
+    def set_datetime(self, xst_datetime):
         """Manual input of time via PyBadge DisplayIO."""
-        self._datetime = datetime
+        self._xst_datetime = xst_datetime
 
         if not self.panel.button.start:
-            return self._datetime, False  # return datetime and "no change" flag
+            return self._xst_datetime, False  # return datetime and "no change" flag
 
         self.panel.play_tone(784, 0.030)  # G5
         while self.panel.button.start:
@@ -369,37 +396,45 @@ class DisplayioDisplay:
 
         self.dim()
         self._clock_digits_colon.text = ""
-        self._clock_name.text = "24-hr Standard Time"
-        self._clock_name.color = self._YELLOW
+        self._clock_ampm.text         = ""
+        self._clock_digits_hour.text  = "{:02}".format(self._xst_datetime.tm_hour)
+        self._clock_dst.text          = "xST"
+        self._clock_name.text         = "24-hr Standard Time"
+        self._clock_name.color        = self.YELLOW
+        if self._clock_alarm.text == "":
+            self._clock_alarm.text    = "-OFF-"
+        if self._clock_auto_dst.text == "":
+            self._clock_auto_dst.text = "-OFF-"
 
-        self._param_index = 0  # Reset index of parameter to set
+        self._param_index = 0  # Reset index of parameter list
 
         # Select parameter to change
         while not self.panel.button.start:
             while (not self.panel.button.a) and (not self.panel.button.start):
                 if self.panel.button.left:
                     self._param_index = self._param_index - 1
-                    self.panel.play_tone(659, 0.030)  # E5
                 if self.panel.button.right:
                     self._param_index = self._param_index + 1
-                    self.panel.play_tone(880, 0.030)  # A5
                 self._param_index = max(7, min(13, self._param_index))
-                self._image_group[self._param_index].color = self._WHITE
-                time.sleep(0.2)
-                self._image_group[self._param_index].color = self._BLUE
-                time.sleep(0.2)
+                self._image_group[self._param_index].color = self.CYAN
+                time.sleep(0.15)
+                self._image_group[self._param_index].color = self.BLUE
+                time.sleep(0.15)
 
-            if self.panel.button.a:  # "select" button pressed
+            if self.panel.button.a:                # "select" button pressed
                 self.panel.play_tone(1319, 0.030)  # E6
-            while self.panel.button.a:  # Wait for button release
+            while self.panel.button.a:             # Wait for button release
                 pass
 
             # Adjust parameter value
             while (not self.panel.button.a) and (not self.panel.button.start):
-                self._image_group[self._param_index].color = self._WHITE
+                self._image_group[self._param_index].color = self.GREEN
 
                 if self._label_edits[self._param_index][0] in ("int2", "int4"):
                     self._param_value = int(self._image_group[self._param_index].text)
+
+                if self._label_edits[self._param_index][0] == "month":
+                    self._param_value = self._month.index(self._image_group[self._param_index].text)
 
                 if self._label_edits[self._param_index][0] == "boolean":
                     self._param_value = 0
@@ -415,92 +450,81 @@ class DisplayioDisplay:
 
                 # Get range from edits table
                 if self._label_edits[self._param_index][0] == "int2":
+                    self._image_group[self._param_index].color = self.GREEN
                     self._param_min   = self._label_edits[self._param_index][1]
                     self._param_max   = self._label_edits[self._param_index][2]
-                    self._param_value = max(self._param_min, min(self._param_max, self._param_value))
+                    self._param_value = max(self._param_min,
+                                            min(self._param_max, self._param_value))
                     self._image_group[self._param_index].text = str("{:02}".format(self._param_value))
 
                 if self._label_edits[self._param_index][0] == "int4":
+                    self._image_group[self._param_index].color = self.GREEN
                     self._param_min   = self._label_edits[self._param_index][1]
                     self._param_max   = self._label_edits[self._param_index][2]
-                    self._param_value = max(self._param_min, min(self._param_max, self._param_value))
+                    self._param_value = max(self._param_min,
+                                            min(self._param_max, self._param_value))
                     self._image_group[self._param_index].text = str("{:04}".format(self._param_value))
+
+                if self._label_edits[self._param_index][0] == "month":
+                    self._image_group[self._param_index].color = self.GREEN
+                    self._param_min   = self._label_edits[self._param_index][1] - 1
+                    self._param_max   = self._label_edits[self._param_index][2] - 1
+                    self._param_value = max(self._param_min,
+                                            min(self._param_max, self._param_value))
+                    self._image_group[self._param_index].text = self._month[self._param_value]
 
                 if self._label_edits[self._param_index][0] == "boolean":
                     self._param_min   = self._label_edits[self._param_index][1]
                     self._param_max   = self._label_edits[self._param_index][2]
-                    self._param_value = max(self._param_min, min(self._param_max, self._param_value))
+                    self._param_value = max(self._param_min, min(self._param_max,
+                                                                 self._param_value))
                     if self._param_value == 1:
-                        self._image_group[self._param_index].color = self._GREEN
-                        if self._param_index == 12:
+                        self._image_group[self._param_index].color = self.GREEN
+                        if self._param_index == 7:
                             self._image_group[self._param_index].text  = "ALARM"
-                        elif self._param_index == 13:
+                            self._alarm   = True
+                        elif self._param_index == 8:
                             self._image_group[self._param_index].text  = "AutoDST"
+                            self._auto_dst = True
                     else:
-                        self._image_group[self._param_index].color = self._RED
-                        self._image_group[self._param_index].text  = "-OFF-"
+                        self._image_group[self._param_index].color = self.RED
+                        if self._param_index == 7:
+                            self._image_group[self._param_index].text  = "-OFF-"
+                            self._alarm   = False
+                        elif self._param_index == 8:
+                            self._image_group[self._param_index].text  = "-OFF-"
+                            self._auto_dst = False
 
-                time.sleep(.25)
+                time.sleep(.2)
 
-            self._image_group[self._param_index].color = self._BLUE
+            self._image_group[self._param_index].color = self.BLUE
 
-            if self.panel.button.a:  # "select" button pressed
+            if self.panel.button.a:                # "select" button pressed
                 self.panel.play_tone(1319, 0.030)  # E6
-            while self.panel.button.a:  # Wait for button release
+            while self.panel.button.a:             # Wait for button release
                 pass
 
         # Exit setup process
-        if self.panel.button.start:  # Start button pressed
+        if self.panel.button.start:           # Start button pressed
             self.panel.play_tone(784, 0.030)  # G5
-        while self.panel.button.start:  # Wait for button release
+        while self.panel.button.start:        # Wait for button release
             pass
 
-        # create new structured datetime object here
+        set_yr  = int(self._clock_year.text)
+        set_mon = self._month.index(self._clock_month.text) + 1
+        set_dom = int(self._clock_mday.text)
+        set_hr  = int(self._clock_digits_hour.text)
+        set_min = int(self._clock_digits_min.text)
 
+        # Build structured time:             ((year, mon, date, hour,
+        #                                      min, sec, wday, yday, isdst))
+        self._xst_datetime = time.struct_time((set_yr, set_mon, set_dom, set_hr,
+                                               set_min, 0, -1, -1, -1))
+        # Fix weekday and yearday structured time errors
+        self._xst_datetime = time.localtime(time.mktime(self._xst_datetime))
 
         self._clock_name.text = self._name  # restore clock name label
-        self.show(self._datetime)  # update clock display
         self.restore()  # restore clock element colors
 
         # return with new datetime and "something changed" flag
-        return self._datetime, True
-
-
-        """print("Enter time as 24-hour Standard Time")
-        set_yr  = input("enter year (YYYY):")
-        if set_yr == "":
-            set_yr = int(2000)
-        else:
-            set_yr = max(2000, min(2037, int(set_yr)))
-
-        set_mon = input("enter month (MM):")
-        if set_mon == "":
-            set_mon = 1
-        else:
-            set_mon = max(1, min(12, int(set_mon)))
-
-        set_dom = input("enter day-of-month (DD):")
-        if set_dom == "":
-            set_dom = 1
-        else:
-            set_dom = max(1, min(31, int(set_dom)))
-
-        set_hr  = input("enter 24-hour Standard Time hour (hh):")
-        if set_hr == "":
-            set_hr = 0
-        else:
-            set_hr = max(0, min(24, int(set_hr)))
-
-        set_min = input("enter minute (mm):")
-        if set_min == "":
-            set_min = 0
-        else:
-            set_min = max(0, min(59, int(set_min)))
-
-        # Build structured time:         ((year, mon, date, hour,
-        #                                  min, sec, wday, yday, isdst))
-        self._datetime = time.struct_time((set_yr, set_mon, set_dom, set_hr,
-                                           set_min, 0, -1, -1, -1))
-
-        # Fix weekday and yearday structured time errors
-        self._datetime = time.localtime(time.mktime(self._datetime))"""
+        return self._xst_datetime, True

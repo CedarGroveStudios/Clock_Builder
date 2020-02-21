@@ -1,6 +1,8 @@
 # repl_display.py
 # 2020-02-05 Cedar Grove Studios
 
+import time
+
 class ReplDisplay:
 
     def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
@@ -65,12 +67,6 @@ class ReplDisplay:
     def alarm(self, alarm=False):
         self._alarm = alarm
 
-    @property
-    def show(self):
-        """Display time via REPL."""
-        return
-
-    @show.setter
     def show(self, datetime):
         """Display time via REPL."""
         self._datetime = datetime
@@ -101,3 +97,45 @@ class ReplDisplay:
                                              self._datetime.tm_sec, am_pm,
                                              self._weekday[self._datetime.tm_wday]))
         return
+
+    def set_datetime(self):
+        """Manual input of time via REPL."""
+        print("Enter time as 24-hour Standard Time")
+        set_yr  = input("enter year (YYYY):")
+        if set_yr == "":
+            set_yr = int(2000)
+        else:
+            set_yr = max(2000, min(2037, int(set_yr)))
+
+        set_mon = input("enter month (MM):")
+        if set_mon == "":
+            set_mon = 1
+        else:
+            set_mon = max(1, min(12, int(set_mon)))
+
+        set_dom = input("enter day-of-month (DD):")
+        if set_dom == "":
+            set_dom = 1
+        else:
+            set_dom = max(1, min(31, int(set_dom)))
+
+        set_hr  = input("enter 24-hour Standard Time hour (hh):")
+        if set_hr == "":
+            set_hr = 0
+        else:
+            set_hr = max(0, min(24, int(set_hr)))
+
+        set_min = input("enter minute (mm):")
+        if set_min == "":
+            set_min = 0
+        else:
+            set_min = max(0, min(59, int(set_min)))
+
+        # Build structured time:         ((year, mon, date, hour,
+        #                                  min, sec, wday, yday, isdst))
+        self._datetime = time.struct_time((set_yr, set_mon, set_dom, set_hr,
+                                           set_min, 0, -1, -1, -1))
+
+        # Fix weekday and yearday structured time errors
+        self._datetime = time.localtime(time.mktime(self._datetime))
+        return self._datetime
