@@ -96,12 +96,6 @@ class Led14x4Display:
         """Display the colon."""
         self._colon = colon
 
-    @property
-    def show(self):
-        """Display time via LED display."""
-        return
-
-    @show.setter
     def show(self, datetime, dot=True):
         """Display time via LED display."""
         self._datetime = datetime
