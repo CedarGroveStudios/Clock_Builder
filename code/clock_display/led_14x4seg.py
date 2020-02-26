@@ -18,6 +18,8 @@ class Led14x4Display:
         self._colon      = True
 
         self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        self._month   = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+                         "Sep", "Oct", "Nov", "Dec"]
 
         i2c = board.I2C()
         self._display = Seg14x4(i2c, address=0x70)
@@ -96,7 +98,7 @@ class Led14x4Display:
         """Display the colon."""
         self._colon = colon
 
-    def show(self, datetime, dot=True):
+    def show(self, datetime, dot=True, date=False):
         """Display time via LED display."""
         self._datetime = datetime
 
@@ -112,10 +114,30 @@ class Led14x4Display:
             if hour == 0:  # midnight hour fix
                 hour = 12
 
-        if self._colon:
-            self._display.print("{:02}.{:02}".format(hour, self._datetime.tm_min))
+        if not date:
+            if self._colon:
+                self._display.print("{:02}.{:02}".format(hour, self._datetime.tm_min))
+            else:
+                self._display.print("{:02}{:02}".format(hour, self._datetime.tm_min))
+
         else:
-            self._display.print("{:02}{:02}".format(hour, self._datetime.tm_min))
+            # marquee test section
+            self._clock_wday  = self._weekday[self._datetime.tm_wday]
+            self._clock_month = self._month[self._datetime.tm_mon - 1]
+            self._clock_mday  = "{:02d}".format(self._datetime.tm_mday)
+            self._clock_year  = "{:04d}".format(self._datetime.tm_year)
+
+            self._clock_digits_hour = "{:02}".format(hour)
+            self._clock_digits_min  = "{:02}".format(self._datetime.tm_min)
+            if self._colon:
+                self._clock_digits_colon = "."
+            else:
+                self._clock_digits_colon = ""
+
+            self._display.marquee(self._clock_wday + " " + self._clock_month + " " +
+                                  self._clock_mday + ", " + self._clock_year +
+                                  "    ", delay=0.4, loop=False)
+        # end marquee test section
 
         self._display.show()
 
