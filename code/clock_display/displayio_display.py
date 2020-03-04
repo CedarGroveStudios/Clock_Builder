@@ -7,7 +7,7 @@ import displayio
 from adafruit_display_text.label import Label
 from adafruit_bitmap_font        import bitmap_font
 import adafruit_imageload
-from adafruit_pybadger import PyBadger
+from adafruit_pybadger import pybadger
 from simpleio                    import map_range
 
 class DisplayioDisplay:
@@ -38,9 +38,10 @@ class DisplayioDisplay:
         self._font_1 = bitmap_font.load_font("/fonts/Helvetica-Bold-36.bdf")
 
         # Instantiate PyBadger instance
-        self.panel = PyBadger(pixels_brightness=0.1)  # Set default NeoPixel brightness
-        self.panel.pixels.fill(0)                     # Clear all NeoPixels
-        self.panel.play_tone(440, 0.1)                # A4 welcome tone
+        self.panel = pybadger
+        self.panel._neopixels.brightness = 0.1  # Set default NeoPixel brightness
+        self.panel.pixels.fill(0x000000)        # Clear all NeoPixels
+        self.panel.play_tone(440, 0.1)          # A4 welcome tone
 
         # The board's integral display size
         WIDTH  = board.DISPLAY.width   # 160 for PyGamer and PyBadge
