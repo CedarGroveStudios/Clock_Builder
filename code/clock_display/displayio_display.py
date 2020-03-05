@@ -13,13 +13,13 @@ from simpleio                    import map_range
 class DisplayioDisplay:
 
     def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
-                 alarm=False, brightness=1.0, debug=False):
+                 sound=False, brightness=1.0, debug=False):
         #input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24_12
         self._dst        = False
         self._auto_dst   = auto_dst
-        self._alarm      = alarm
+        self._sound      = sound
         self._brightness = brightness
 
         #other parameters
@@ -139,13 +139,13 @@ class DisplayioDisplay:
         self._label_restore_color.append(self._clock_dst.color)
         self._label_edits.append(None)
 
-        # Alarm indicator; image_group[7]
-        self._clock_alarm = Label(self._font_0, text="-----",
-                                  color=self.ORANGE, max_glyphs=5)
-        self._clock_alarm.x = 5
-        self._clock_alarm.y = HEIGHT - 8
-        self._image_group.append(self._clock_alarm)
-        self._label_restore_color.append(self._clock_alarm.color)
+        # Sound indicator; image_group[7]
+        self._clock_sound = Label(self._font_0, text="-----",
+                                  color=self.VIOLET, max_glyphs=5)
+        self._clock_sound.x = 5
+        self._clock_sound.y = HEIGHT - 8
+        self._image_group.append(self._clock_sound)
+        self._label_restore_color.append(self._clock_sound.color)
         self._label_edits.append(("boolean", 0, 1))
 
         # Automatic DST indicator; image_group[8]
@@ -276,13 +276,13 @@ class DisplayioDisplay:
         self._auto_dst = auto_dst
 
     @property
-    def alarm(self):
-        """Alarm is activated. Default is no alarm (False)."""
-        return self._alarm
+    def sound(self):
+        """Sound is activated. Default is no sound (False)."""
+        return self._sound
 
-    @alarm.setter
-    def alarm(self, alarm=False):
-        self._alarm = alarm
+    @sound.setter
+    def sound(self, sound=False):
+        self._sound = sound
 
     @property
     def brightness(self):
@@ -345,10 +345,10 @@ class DisplayioDisplay:
             if self._hour  == 0:  # midnight hour fix
                 self._hour = 12
 
-        if self._alarm:
-            self._clock_alarm.text = "ALARM"
+        if self._sound:
+            self._clock_sound.text = "SOUND"
         else:
-            self._clock_alarm.text = ""
+            self._clock_sound.text = ""
 
         self._clock_name.text  = self._name
         self._clock_wday.text  = self._weekday[self._datetime.tm_wday]
@@ -389,7 +389,7 @@ class DisplayioDisplay:
         self._xst_datetime = xst_datetime
 
         if not self.panel.button.start:
-            return self._xst_datetime, False  # return datetime and "no change" flag
+            return self._xst_datetime, self._sound, False  # return datetime, sound flag, and "no change" flag
 
         self.panel.play_tone(784, 0.030)  # G5
         while self.panel.button.start:
@@ -402,8 +402,8 @@ class DisplayioDisplay:
         self._clock_dst.text          = "xST"
         self._clock_name.text         = "24-hr Standard Time"
         self._clock_name.color        = self.YELLOW
-        if self._clock_alarm.text == "":
-            self._clock_alarm.text    = "-OFF-"
+        if self._clock_sound.text == "":
+            self._clock_sound.text    = "-OFF-"
         if self._clock_auto_dst.text == "":
             self._clock_auto_dst.text = "-OFF-"
 
@@ -437,7 +437,7 @@ class DisplayioDisplay:
 
                 if self._label_edits[self._param_index][0] == "boolean":
                     self._param_value = 0
-                    if self._image_group[self._param_index].text in ("ALARM", "AutoDST"):
+                    if self._image_group[self._param_index].text in ("SOUND", "AutoDST"):
                         self._param_value = 1
 
                 if self.panel.button.up:
@@ -480,8 +480,8 @@ class DisplayioDisplay:
                     if self._param_value == 1:
                         self._image_group[self._param_index].color = self.GREEN
                         if self._param_index == 7:
-                            self._image_group[self._param_index].text  = "ALARM"
-                            self._alarm   = True
+                            self._image_group[self._param_index].text  = "SOUND"
+                            self._sound   = True
                         elif self._param_index == 8:
                             self._image_group[self._param_index].text  = "AutoDST"
                             self._auto_dst = True
@@ -489,7 +489,7 @@ class DisplayioDisplay:
                         self._image_group[self._param_index].color = self.RED
                         if self._param_index == 7:
                             self._image_group[self._param_index].text  = "-OFF-"
-                            self._alarm   = False
+                            self._sound   = False
                         elif self._param_index == 8:
                             self._image_group[self._param_index].text  = "-OFF-"
                             self._auto_dst = False
@@ -523,5 +523,5 @@ class DisplayioDisplay:
         self._clock_name.text = self._name  # restore clock name label
         self.restore()  # restore clock element colors
 
-        # return with new datetime and "something changed" flag
-        return self._xst_datetime, True
+        # return with new datetime, sound flag, and "something changed" flag
+        return self._xst_datetime, self._sound, True
