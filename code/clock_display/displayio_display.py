@@ -1,5 +1,5 @@
 # displayio_display.py
-# 2020-02-19 Cedar Grove Studios
+# 2020-03-05 Cedar Grove Studios
 
 import time
 import board
@@ -410,8 +410,8 @@ class DisplayioDisplay:
         self._param_index = 0  # Reset index of parameter list
 
         # Select parameter to change
-        while not self.panel.button.start:
-            while (not self.panel.button.a) and (not self.panel.button.start):
+        while not self.panel.button.start:  # start button exits setup process
+            while (not (self.panel.button.up or self.panel.button.down)) and (not self.panel.button.start):
                 if self.panel.button.left:
                     self._param_index = self._param_index - 1
                 if self.panel.button.right:
@@ -422,13 +422,11 @@ class DisplayioDisplay:
                 self._image_group[self._param_index].color = self.BLUE
                 time.sleep(0.15)
 
-            if self.panel.button.a:                # "select" button pressed
+            if self.panel.button.up or self.panel.button.down:
                 self.panel.play_tone(1319, 0.030)  # E6
-            while self.panel.button.a:             # Wait for button release
-                pass
 
             # Adjust parameter value
-            while (not self.panel.button.a) and (not self.panel.button.start):
+            while (not (self.panel.button.left or self.panel.button.right)) and (not self.panel.button.start):
                 self._image_group[self._param_index].color = self.GREEN
 
                 if self._label_edits[self._param_index][0] in ("int2", "int4"):
@@ -500,10 +498,8 @@ class DisplayioDisplay:
 
             self._image_group[self._param_index].color = self.BLUE
 
-            if self.panel.button.a:                # "select" button pressed
+            if self.panel.button.left or self.panel.button.right:
                 self.panel.play_tone(1319, 0.030)  # E6
-            while self.panel.button.a:             # Wait for button release
-                pass
 
         # Exit setup process
         if self.panel.button.start:           # Start button pressed
