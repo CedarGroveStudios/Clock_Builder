@@ -346,7 +346,7 @@ class DisplayioDisplay:
                 self._hour = 12
 
         if self._sound:
-            self._clock_sound.text = "SOUND"
+            self._clock_sound.text = "sFX"
         else:
             self._clock_sound.text = ""
 
@@ -437,7 +437,7 @@ class DisplayioDisplay:
 
                 if self._label_edits[self._param_index][0] == "boolean":
                     self._param_value = 0
-                    if self._image_group[self._param_index].text in ("SOUND", "AutoDST"):
+                    if self._image_group[self._param_index].text in ("sFX", "AutoDST"):
                         self._param_value = 1
 
                 if self.panel.button.up:
@@ -480,7 +480,7 @@ class DisplayioDisplay:
                     if self._param_value == 1:
                         self._image_group[self._param_index].color = self.GREEN
                         if self._param_index == 7:
-                            self._image_group[self._param_index].text  = "SOUND"
+                            self._image_group[self._param_index].text  = "sFX"
                             self._sound   = True
                         elif self._param_index == 8:
                             self._image_group[self._param_index].text  = "AutoDST"
