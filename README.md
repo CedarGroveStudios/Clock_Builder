@@ -11,10 +11,11 @@ Displays:
 - CircuitPython REPL
 - Adafruit 4-digit 7-segment single-color LED displays
 - Adafruit 4-digit 14-segment single-color LED displays
+- PyBadge and EdgeBadge DisplayIO-based TFT display, including time setting method
 
-Set-time methods and devices:
+Time setting methods and devices:
 - CircuitPython REPL
 
 
-Future support is planned for Displayio-based and OLED displays. Set-time devices will include PyBadge/PyGamer/EdgeBadge boards and generic support for GPIO-connected buttons.
+Future support is planned for OLED displays. Time setting devices will include PyGamer and generic support for rotary encoder and GPIO-connected buttons.
 
