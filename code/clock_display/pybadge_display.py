@@ -1,16 +1,16 @@
-# displayio_display.py
+# pybadge_display.py
 # 2020-03-05 Cedar Grove Studios
 
 import time
 import board
 import displayio
-from adafruit_display_text.label import Label
-from adafruit_bitmap_font        import bitmap_font
+from   adafruit_display_text.label import Label
+from   adafruit_bitmap_font        import bitmap_font
 import adafruit_imageload
-from adafruit_pybadger import pybadger
-from simpleio                    import map_range
+from   adafruit_pybadger import pybadger
+from   simpleio                    import map_range
 
-class DisplayioDisplay:
+class PyBadgeDisplay:
 
     def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
                  sound=False, brightness=1.0, debug=False):
