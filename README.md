@@ -2,6 +2,8 @@
  
 ## An in-development collection of modules and libraries for building standalone RTC clocks.
 
+![Clock_Builder](https://github.com/CedarGroveStudios/Clock_Builder/blob/master/clock_builder.png)
+
 Clock_Builder currently supports:
 
 Real-time clock modules:
