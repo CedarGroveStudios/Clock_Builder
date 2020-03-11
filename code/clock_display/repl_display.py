@@ -6,13 +6,13 @@ import time
 class ReplDisplay:
 
     def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
-                 alarm=False, debug=False):
+                 sound=False, debug=False):
         #input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24_12
         self._dst        = False
         self._auto_dst   = auto_dst
-        self._alarm      = alarm
+        self._sound      = sound
 
         self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -59,13 +59,13 @@ class ReplDisplay:
         self._auto_dst = auto_dst
 
     @property
-    def alarm(self):
-        """Alarm is activated. Default is no alarm (False)."""
-        return self._alarm
+    def sound(self):
+        """Sound is activated. Default is no sound (False)."""
+        return self._sound
 
-    @alarm.setter
-    def alarm(self, alarm=False):
-        self._alarm = alarm
+    @sound.setter
+    def sound(self, sound=False):
+        self._sound = sound
 
     def show(self, datetime):
         """Display time via REPL."""
