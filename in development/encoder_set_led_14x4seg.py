@@ -1,5 +1,6 @@
-# led_14x4_display.py
-# 2020-02-05 Cedar Grove Studios
+# encoder_set_led_14x4seg.py
+# 2020-03-11 Cedar Grove Studios
+# with encoder time set function
 
 import time
 import board
@@ -11,13 +12,13 @@ from adafruit_ht16k33.segments import Seg14x4
 class Led14x4Display:
 
     def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
-                 alarm=False, brightness=15, debug=False):
+                 sound=False, brightness=15, debug=False):
         #input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24_12
         self._dst        = False
         self._auto_dst   = auto_dst
-        self._alarm      = alarm
+        self._sound      = sound
         self._colon      = True
 
         self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -106,7 +107,7 @@ class Led14x4Display:
         """Display the colon."""
         self._colon = colon
 
-    def show(self, datetime, dot=True, date=False):
+    def show(self, datetime, date=False):
         """Display time via LED display."""
         self._datetime = datetime
 
@@ -136,31 +137,122 @@ class Led14x4Display:
 
             self._clock_digits_hour = "{:02}".format(hour)
             self._clock_digits_min  = "{:02}".format(self._datetime.tm_min)
-            if self._colon:
-                self._clock_digits_colon = "."
-            else:
-                self._clock_digits_colon = ""
 
             self._display.marquee(self._clock_wday + " " + self._clock_month + " " +
-                                  self._clock_mday + ", " + self._clock_year +
-                                  "    ", delay=0.4, loop=False)
+                                  self._clock_mday + ", " + self._clock_year + " " +
+                                  self._clock_digits_hour + "." +
+                                  self._clock_digits_min + "    ",
+                                  delay=0.4, loop=False)
 
         self._display.show()
         return
 
-        def set_datetime(self, xst_datetime):
-            """Manual input of time via PyBadge DisplayIO."""
-            self._xst_datetime = xst_datetime
+    ### SET DATETIME WITH ROTARY ENCODER ###
+    def set_datetime(self, xst_datetime):
+        """Manual input of time using a rotary encoder."""
+        self._xst_datetime = xst_datetime
 
-            if not self._sel_sw.value:  # select switch pressed?
-                return self._xst_datetime, False  # return datetime and "no change" flag
+        if self._sel_sw.value:  # select switch not pressed
+            return self._xst_datetime, self._sound, False  # return datetime, sound flag, and "no change" flag
 
-            while self._sel_sw:  # wait for switch release
+        # self.panel.play_tone(784, 0.030)  # G5 piezo?
+        self.show(self._xst_datetime, date=True)
+
+        while not self._sel_sw.value:  # wait until switch is released
+            pass
+        self._display.print("-SET")
+        time.sleep(1)
+
+        self._param_index  = 0      # Reset index of parameter list
+        self._enc.position = 0      # Reset encoder position value
+        self._changed      = False  # Reset edit change flag
+
+        # Select parameter to change
+        self._t0 = time.monotonic()  # start timeout clock
+        while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # while select switch not pressed
+            self._t0 = time.monotonic()  # start timeout clock
+            while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # while select switch not pressed
+                self._param_index = self._enc.position
+                self._param_index = max(0, min(5, self._param_index))
+                if self._enc.position != self._param_index:
+                    self._t0 = time.monotonic()  # start timeout clock over
+                self._enc.position = self._param_index
+
+                ### display parameter prompt
+                if self._param_index == 0:  # Set MON parameter
+                    self._display.print("MNTH")
+                if self._param_index == 1:  # set DOM parameter
+                    self._display.print("DATE")
+                if self._param_index == 2:  # set YEAR parameter
+                    self._display.print("YEAR")
+                if self._param_index == 3:  # set HOUR parameter
+                    self._display.print("HOUR")
+                if self._param_index == 4:  # set MIN parameter
+                    self._display.print("MIN ")
+                if self._param_index == 5:  # set SOUND parameter
+                    self._display.print("SFX ")
+
+                time.sleep(0.15)
+
+            # Select switch pressed
+            # self.panel.play_tone(1319, 0.030)  # E6 piezo?
+
+            while not self._sel_sw.value:  # wait for switch to release
                 pass
 
-            while True:
-                position = enc.position
-                if last_position == None or position != last_position:
-                    print(position, not sel_sw.value)
-                last_position = position
-                time.sleep(.1)
+            # Adjust parameter value
+            while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # select switch not pressed
+                self._changed = False
+                ### hard code parameter edits and actions
+                if self._param_index == 0:  # Set MON parameter
+                    self._changed = True
+                if self._param_index == 1:  # set DOM parameter
+                    self._changed = True
+                if self._param_index == 2:  # set YEAR parameter
+                    self._changed = True
+                if self._param_index == 3:  # set HOUR parameter
+                    self._changed = True
+                if self._param_index == 4:  # set MIN parameter
+                    self._changed = True
+                if self._param_index == 5:  # set SOUND parameter
+                    self._changed = True
+
+                self._parameter_value = self._enc.position
+
+                ### adjust edit values
+
+                time.sleep(.2)
+
+            # Select switch pressed
+            # self.panel.play_tone(1319, 0.030)  # E6 piezo
+
+            while not self._sel_sw.value:  # Wait for select switch release
+                pass
+
+        # Exit setup process
+        if not self._sel_sw.value:  # Select switch pressed
+            # self.panel.play_tone(784, 0.030)  # G5 piezo?
+            pass
+        while not self._sel_sw.value:  # Wait for select switch release
+            pass
+
+        ### build updated structured time and sound flag values --> if changed
+        # set_yr  =
+        # set_mon =
+        # set_dom =
+        # set_hr  =
+        # set_min =
+        # self._sound =
+
+        # Build structured time:             ((year, mon, date, hour,
+        #                                      min, sec, wday, yday, isdst))
+        #self._xst_datetime = time.struct_time((set_yr, set_mon, set_dom, set_hr,
+        #                                       set_min, 0, -1, -1, -1))
+        # Fix weekday and yearday structured time errors
+        #self._xst_datetime = time.localtime(time.mktime(self._xst_datetime))
+
+        if self._changed:
+            self.show(self._xst_datetime, date=True)
+
+        # return with new datetime, sound flag, and "something changed" flag
+        return self._xst_datetime, self._sound, self._changed
