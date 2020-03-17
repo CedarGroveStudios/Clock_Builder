@@ -21,9 +21,19 @@ class Led14x4Display:
         self._sound      = sound
         self._colon      = True
 
-        self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        self._month   = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
-                         "Sep", "Oct", "Nov", "Dec"]
+        self._weekday    = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        self._month      = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+                            "Aug", "Sep", "Oct", "Nov", "Dec"]
+        self._param_list = [
+                            ("MNTH", 1, 12),
+                            ("DATE", 1, 31),
+                            ("YEAR", 2010, 2037),
+                            ("24HR", 0, 23),
+                            ("MIN ", 0, 59),
+                            ("SFX ", 0, 1)
+                            ]
+
+        self._param_val_list = [3, 16, 2020, 12, 0, 0]
 
         self._sel_sw = DigitalInOut(board.D9)
         self._sel_sw.direction = Direction.INPUT
@@ -163,6 +173,16 @@ class Led14x4Display:
         self._display.print("-SET")
         time.sleep(1)
 
+        self._param_val_list[0] = self._datetime.tm_mon
+        self._param_val_list[1] = self._datetime.tm_mday
+        self._param_val_list[2] = self._datetime.tm_year
+        self._param_val_list[3] = self._datetime.tm_hour
+        self._param_val_list[4] = self._datetime.tm_min
+        if self._sound:
+            self._param_val_list[5] = 1
+        else:
+            self._param_val_list[5] = 0
+
         self._param_index  = 0      # Reset index of parameter list
         self._enc.position = 0      # Reset encoder position value
         self._changed      = False  # Reset edit change flag
@@ -179,19 +199,7 @@ class Led14x4Display:
                 self._enc.position = self._param_index
 
                 ### display parameter prompt
-                if self._param_index == 0:  # Set MON parameter
-                    self._display.print("MNTH")
-                if self._param_index == 1:  # set DOM parameter
-                    self._display.print("DATE")
-                if self._param_index == 2:  # set YEAR parameter
-                    self._display.print("YEAR")
-                if self._param_index == 3:  # set HOUR parameter
-                    self._display.print("HOUR")
-                if self._param_index == 4:  # set MIN parameter
-                    self._display.print("MIN ")
-                if self._param_index == 5:  # set SOUND parameter
-                    self._display.print("SFX ")
-
+                self._display.print(self._param_list[self._param_index][0])
                 time.sleep(0.15)
 
             # Select switch pressed
@@ -203,25 +211,42 @@ class Led14x4Display:
             # Adjust parameter value
             while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # select switch not pressed
                 self._changed = False
-                ### hard code parameter edits and actions
-                if self._param_index == 0:  # Set MON parameter
-                    self._changed = True
-                if self._param_index == 1:  # set DOM parameter
-                    self._changed = True
-                if self._param_index == 2:  # set YEAR parameter
-                    self._changed = True
-                if self._param_index == 3:  # set HOUR parameter
-                    self._changed = True
-                if self._param_index == 4:  # set MIN parameter
-                    self._changed = True
-                if self._param_index == 5:  # set SOUND parameter
+
+                ### parameter edits and actions
+
+                self._t0 = time.monotonic()  # start timeout clock
+                self._enc.position = self._param_val_list[self._param_index]  #set to default value for testing
+                while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # while select switch not pressed
+                    self._param_value = self._enc.position
+                    self._min = self._param_list[self._param_index][1]  # minimum value
+                    self._max = self._param_list[self._param_index][2]  # maximum value
+                    self._param_value = max(self._min, min(self._max, self._param_value))
+                    if self._enc.position != self._param_value:
+                        self._t0 = time.monotonic()  # start timeout clock over
+                    self._enc.position = self._param_value
+
+                    ### display parameter prompt
+                    if self._param_index == 0:  # month value
+                        self._display.print((self._month[self._param_value - 1]) + " ")
+                    if self._param_index == 2:  # 4-digit year vallue
+                        self._display.print("{:04d}".format(self._param_value))
+                    if self._param_index in [1,3,4]:
+                        self._display.print("{:02d}  ".format(self._param_value))
+                    if self._param_index == 5:  # sound effects flag
+                        if self._param_value == 1:
+                            self._display.print("ON  ")
+                        else:
+                            self._display.print("OFF ")
+
+                    time.sleep(0.15)
+                    self._param_val_list[self._param_index] = self._param_value
                     self._changed = True
 
-                self._parameter_value = self._enc.position
+                self._enc.position = self._param_index + 1  # move to next param
 
                 ### adjust edit values
 
-                time.sleep(.2)
+                time.sleep(0.2)
 
             # Select switch pressed
             # self.panel.play_tone(1319, 0.030)  # E6 piezo
@@ -236,22 +261,21 @@ class Led14x4Display:
         while not self._sel_sw.value:  # Wait for select switch release
             pass
 
-        ### build updated structured time and sound flag values --> if changed
-        # set_yr  =
-        # set_mon =
-        # set_dom =
-        # set_hr  =
-        # set_min =
-        # self._sound =
+        self._sound = self._param_val_list[5]
 
-        # Build structured time:             ((year, mon, date, hour,
-        #                                      min, sec, wday, yday, isdst))
-        #self._xst_datetime = time.struct_time((set_yr, set_mon, set_dom, set_hr,
-        #                                       set_min, 0, -1, -1, -1))
+        # Structured time: (year, mon, date, hour, min, sec, wday, yday, isdst)
+        self._xst_datetime = time.struct_time((self._param_val_list[2],
+                                               self._param_val_list[0],
+                                               self._param_val_list[1],
+                                               self._param_val_list[3],
+                                               self._param_val_list[4],
+                                               0, -1, -1, -1))
         # Fix weekday and yearday structured time errors
-        #self._xst_datetime = time.localtime(time.mktime(self._xst_datetime))
+        self._xst_datetime = time.localtime(time.mktime(self._xst_datetime))
 
         if self._changed:
+            self._display.print("-NEW")
+            time.sleep(1)
             self.show(self._xst_datetime, date=True)
 
         # return with new datetime, sound flag, and "something changed" flag
