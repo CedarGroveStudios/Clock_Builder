@@ -20,20 +20,16 @@ class Led14x4Display:
         self._auto_dst   = auto_dst
         self._sound      = sound
         self._colon      = True
+        self._message    = "    "
 
         self._weekday    = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         self._month      = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
                             "Aug", "Sep", "Oct", "Nov", "Dec"]
-        self._param_list = [
-                            ("MNTH", 1, 12),
-                            ("DATE", 1, 31),
-                            ("YEAR", 2010, 2037),
-                            ("24HR", 0, 23),
-                            ("MIN ", 0, 59),
-                            ("SFX ", 0, 1)
-                            ]
+        self._param_list = [("MNTH", 1, 12), ("DATE", 1, 31),
+                            ("YEAR", 2010, 2037), ("24HR", 0, 23),
+                            ("MIN ", 0, 59), ("SFX ", 0, 1), ("EXIT", 0, 0)]
 
-        self._param_val_list = [3, 16, 2020, 12, 0, 0]
+        self._param_val_list = [0, 0, 0, 0, 0, 0]  # holder for parameter values
 
         self._sel_sw = DigitalInOut(board.D9)
         self._sel_sw.direction = Direction.INPUT
@@ -117,6 +113,18 @@ class Led14x4Display:
         """Display the colon."""
         self._colon = colon
 
+    @property
+    def message(self):
+        """Display message."""
+        return self._message
+
+    @message.setter
+    def message(self, text=""):
+        self._message = text + "    "
+
+        # add piezo alert tone here
+        self._display.marquee(self._message, delay=0.2, loop=False)
+
     def show(self, datetime, date=False):
         """Display time via LED display."""
         self._datetime = datetime
@@ -148,11 +156,13 @@ class Led14x4Display:
             self._clock_digits_hour = "{:02}".format(hour)
             self._clock_digits_min  = "{:02}".format(self._datetime.tm_min)
 
-            self._display.marquee(self._clock_wday + " " + self._clock_month + " " +
-                                  self._clock_mday + ", " + self._clock_year + " " +
+            self._display.marquee(self._clock_wday + " " + self._clock_month +
+                                  " " + self._clock_mday + ", " +
+                                  self._clock_year + " " +
                                   self._clock_digits_hour + "." +
-                                  self._clock_digits_min + "    ",
-                                  delay=0.4, loop=False)
+                                  self._clock_digits_min, delay=0.2,
+                                  loop=False)
+            time.sleep(0.5)
 
         self._display.show()
         return
@@ -166,18 +176,19 @@ class Led14x4Display:
             return self._xst_datetime, self._sound, False  # return datetime, sound flag, and "no change" flag
 
         # self.panel.play_tone(784, 0.030)  # G5 piezo?
-        self.show(self._xst_datetime, date=True)
+        # self.show(self._xst_datetime, date=True)
 
         while not self._sel_sw.value:  # wait until switch is released
             pass
-        self._display.print("-SET")
-        time.sleep(1)
+        self._display.marquee("- SET XST 24-HR -    ", delay=0.15,
+                              loop=False)
+        time.sleep(0.5)
 
-        self._param_val_list[0] = self._datetime.tm_mon
-        self._param_val_list[1] = self._datetime.tm_mday
-        self._param_val_list[2] = self._datetime.tm_year
-        self._param_val_list[3] = self._datetime.tm_hour
-        self._param_val_list[4] = self._datetime.tm_min
+        self._param_val_list[0] = self._xst_datetime.tm_mon
+        self._param_val_list[1] = self._xst_datetime.tm_mday
+        self._param_val_list[2] = self._xst_datetime.tm_year
+        self._param_val_list[3] = self._xst_datetime.tm_hour
+        self._param_val_list[4] = self._xst_datetime.tm_min
         if self._sound:
             self._param_val_list[5] = 1
         else:
@@ -193,7 +204,7 @@ class Led14x4Display:
             self._t0 = time.monotonic()  # start timeout clock
             while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # while select switch not pressed
                 self._param_index = self._enc.position
-                self._param_index = max(0, min(5, self._param_index))
+                self._param_index = max(0, min(6, self._param_index))
                 if self._enc.position != self._param_index:
                     self._t0 = time.monotonic()  # start timeout clock over
                 self._enc.position = self._param_index
@@ -208,12 +219,14 @@ class Led14x4Display:
             while not self._sel_sw.value:  # wait for switch to release
                 pass
 
+            if self._param_index == 6:  # EXIT was selected
+                self._t0 = 0  # force process to skip parameter value section
+
             # Adjust parameter value
-            while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # select switch not pressed
+            while self._sel_sw.value and time.monotonic() - self._t0 < 5:  # select switch not pressed
                 self._changed = False
 
                 ### parameter edits and actions
-
                 self._t0 = time.monotonic()  # start timeout clock
                 self._enc.position = self._param_val_list[self._param_index]  #set to default value for testing
                 while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # while select switch not pressed
@@ -269,13 +282,12 @@ class Led14x4Display:
                                                self._param_val_list[1],
                                                self._param_val_list[3],
                                                self._param_val_list[4],
-                                               0, -1, -1, -1))
+                                               1, -1, -1, -1))
         # Fix weekday and yearday structured time errors
         self._xst_datetime = time.localtime(time.mktime(self._xst_datetime))
 
         if self._changed:
-            self._display.print("-NEW")
-            time.sleep(1)
+            self._display.marquee("-NEW", delay=0.2, loop=False)
             self.show(self._xst_datetime, date=True)
 
         # return with new datetime, sound flag, and "something changed" flag
