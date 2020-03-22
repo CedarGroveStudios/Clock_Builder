@@ -1,5 +1,5 @@
-# led_7x4seg.py
-# "standard" 7-segment 4-digit LED display class
+# bigled_7x4seg.py
+# Class for 1.2-inch "Big" LED display
 # 2020-03-21 Cedar Grove Studios
 # with encoder time set function
 
@@ -8,10 +8,10 @@ import board
 import rotaryio
 from digitalio                 import DigitalInOut, Direction, Pull
 import rotaryio as enc
-from adafruit_ht16k33.segments import Seg7x4
+from adafruit_ht16k33.segments import BigSeg7x4
 from simpleio                  import tone
 
-class Led7x4Display:
+class BigLed7x4Display:
 
     def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
                  sound=False, brightness=15, debug=False):
@@ -47,7 +47,7 @@ class Led7x4Display:
 
         # display
         i2c = board.I2C()
-        self._display = Seg7x4(i2c, address=0x70)
+        self._display = BigSeg7x4(i2c, address=0x70)
         self._display.brightness = brightness
         self._display.fill(0)  # Clear the display
         self._display.print("----")

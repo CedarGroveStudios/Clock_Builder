@@ -1,5 +1,5 @@
 # pybadge_display.py
-# 2020-03-05 Cedar Grove Studios
+# 2020-03-21 Cedar Grove Studios
 
 import time
 import board
@@ -23,7 +23,7 @@ class PyBadgeDisplay:
         self._brightness = brightness
 
         #other parameters
-        self._name       = "Musique_Concrete"
+        self._message    = "PyBadge Clock"
         self._colon      = True
         self._batt_level = 5
         self._label_edits = []  # label edit attributes
@@ -202,13 +202,13 @@ class PyBadgeDisplay:
         self._label_restore_color.append(self._clock_digits_min.color)
         self._label_edits.append(("int2", 0, 59))
 
-        # Clock Name indicator; image_group[14]
-        self._clock_name = Label(self._font_0, text="",
+        # Clock Message area; image_group[14]
+        self._clock_message = Label(self._font_0, text="",
                                  color=self.VIOLET, max_glyphs=20)
-        self._clock_name.x = 5
-        self._clock_name.y = 5
-        self._image_group.append(self._clock_name)
-        self._label_restore_color.append(self._clock_name.color)
+        self._clock_message.x = 5
+        self._clock_message.y = 5
+        self._image_group.append(self._clock_message)
+        self._label_restore_color.append(self._clock_message.color)
         self._label_edits.append(None)
 
         # debug parameters
@@ -219,25 +219,25 @@ class PyBadgeDisplay:
 
     @property
     def message(self):
-        """Place message in clock name area."""
-        return self._clock_name.text
+        """Place message in clock message area."""
+        return self._clock_message.text
 
     @message.setter
     def message(self, text=""):
         self._msg_text = text[:20]
         if self._msg_text == "":
-            self._clock_name.text = self._name
+            self._clock_message.text = self._message
         else:
-            self._clock_name.color = self.RED
-            self._clock_name.text = self._msg_text
+            self._clock_message.color = self.RED
+            self._clock_message.text = self._msg_text
             self.panel.play_tone(880, 0.100)  # A5
-            self._clock_name.color = self.YELLOW
+            self._clock_message.color = self.YELLOW
             self.panel.play_tone(880, 0.100)  # A5
-            self._clock_name.color = self.RED
+            self._clock_message.color = self.RED
             self.panel.play_tone(880, 0.100)  # A5
-            self._clock_name.color = self.YELLOW
+            self._clock_message.color = self.YELLOW
             time.sleep(1)
-            self._clock_name.color = self.VIOLET
+            self._clock_message.color = self.VIOLET
 
     @property
     def zone(self):
@@ -290,7 +290,7 @@ class PyBadgeDisplay:
         return self._brightness
 
     @brightness.setter
-    def brightness(self, brightness):
+    def brightness(self, brightness=1.0):
         self._brightness = brightness
         board.DISPLAY.brightness = self._brightness
 
@@ -350,7 +350,7 @@ class PyBadgeDisplay:
         else:
             self._clock_sound.text = ""
 
-        self._clock_name.text  = self._name
+        self._clock_message.text  = self._message
         self._clock_wday.text  = self._weekday[self._datetime.tm_wday]
         self._clock_month.text = self._month[self._datetime.tm_mon - 1]
         self._clock_mday.text  = "{:02d}".format(self._datetime.tm_mday)
@@ -372,13 +372,13 @@ class PyBadgeDisplay:
         self.panel.play_file("/clock_display/tick_soft.wav")
         return
 
-    def dim(self, color=0X0000FF):
+    def _dim(self, color=0X0000FF):
         """Dim all image group text elements to BLUE."""
         for i in range(2, len(self._label_restore_color)):
             self._image_group[i].color = color
         return
 
-    def restore(self):
+    def _restore(self):
         """Restore all image group text elements to original colors."""
         for i in range(2, len(self._label_restore_color)):
             self._image_group[i].color = self._label_restore_color[i]
@@ -395,13 +395,13 @@ class PyBadgeDisplay:
         while self.panel.button.start:
             pass
 
-        self.dim()
+        self._dim()
         self._clock_digits_colon.text = ""
         self._clock_ampm.text         = ""
         self._clock_digits_hour.text  = "{:02}".format(self._xst_datetime.tm_hour)
         self._clock_dst.text          = "xST"
-        self._clock_name.text         = "24-hr Standard Time"
-        self._clock_name.color        = self.YELLOW
+        self._clock_message.text         = "24-hr Standard Time"
+        self._clock_message.color        = self.YELLOW
         if self._clock_sound.text == "":
             self._clock_sound.text    = "-OFF-"
         if self._clock_auto_dst.text == "":
@@ -496,6 +496,8 @@ class PyBadgeDisplay:
 
                 time.sleep(.2)
 
+            # optional: update changed flag only when a param value is changed
+
             self._image_group[self._param_index].color = self.BLUE
 
             if self.panel.button.left or self.panel.button.right:
@@ -520,8 +522,8 @@ class PyBadgeDisplay:
         # Fix weekday and yearday structured time errors
         self._xst_datetime = time.localtime(time.mktime(self._xst_datetime))
 
-        self._clock_name.text = self._name  # restore clock name label
-        self.restore()  # restore clock element colors
+        self._clock_message.text = self._message  # restore clock message label
+        self._restore()  # restore clock element colors
 
         # return with new datetime, sound flag, and "something changed" flag
         return self._xst_datetime, self._sound, True

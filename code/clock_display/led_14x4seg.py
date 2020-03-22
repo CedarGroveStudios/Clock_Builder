@@ -1,13 +1,14 @@
 # led_14x4seg.py
-# 2020-03-19 Cedar Grove Studios
+# 2020-03-21 Cedar Grove Studios
 # with encoder time set function
 
 import time
 import board
 import rotaryio
-from digitalio import DigitalInOut, Direction, Pull
+from digitalio                 import DigitalInOut, Direction, Pull
 import rotaryio as enc
 from adafruit_ht16k33.segments import Seg14x4
+from simpleio                  import tone
 
 class Led14x4Display:
 
@@ -21,21 +22,28 @@ class Led14x4Display:
         self._sound      = sound
         self._colon      = True
         self._message    = "    "
+        self._brightness = brightness
 
         self._weekday    = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         self._month      = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
                             "Aug", "Sep", "Oct", "Nov", "Dec"]
         self._param_list = [("MNTH", 1, 12), ("DATE", 1, 31),
                             ("YEAR", 2010, 2037), ("24HR", 0, 23),
-                            ("MIN ", 0, 59), ("SFX ", 0, 1), ("EXIT", 0, 0)]
+                            ("MIN ", 0, 59), ("SFX ", 0, 1), ("BRT ", 1, 15),
+                            ("EXIT", 0, 0)]
 
-        self._param_val_list = [0, 0, 0, 0, 0, 0]  # holder for parameter values
+        self._param_val_list = [0, 0, 0, 0, 0, 0, 0]  # holder for parameter values
 
+        # rotary encoder
         self._sel_sw = DigitalInOut(board.D9)
         self._sel_sw.direction = Direction.INPUT
         self._sel_sw.pull = Pull.UP
         self._enc = rotaryio.IncrementalEncoder(board.D5, board.D6)
 
+        # piezo speaker
+        self._piezo = board.D13  # route to L13 for now
+
+        # display
         i2c = board.I2C()
         self._display = Seg14x4(i2c, address=0x70)
         self._display.brightness = brightness
@@ -86,13 +94,13 @@ class Led14x4Display:
         self._auto_dst = auto_dst
 
     @property
-    def alarm(self):
-        """Alarm is activated. Default is no alarm (False)."""
-        return self._alarm
+    def sound(self):
+        """Sound is activated. Default is no sound (False)."""
+        return self._sound
 
-    @alarm.setter
-    def alarm(self, alarm):
-        self._dst = alarm
+    @sound.setter
+    def sound(self, sound):
+        self._dst = sound
 
     @property
     def brightness(self):
@@ -101,7 +109,7 @@ class Led14x4Display:
 
     @brightness.setter
     def brightness(self, brightness):
-        self._dst = brightness
+        self._brightness = brightness
 
     @property
     def colon(self):
@@ -125,9 +133,15 @@ class Led14x4Display:
         # add piezo alert tone here
         self._display.marquee(self._message, delay=0.2, loop=False)
 
+    def tick(self):
+        """Make tick sound via piezo."""
+        tone(self._piezo, 256, duration=0.030)
+
     def show(self, datetime, date=False):
         """Display time via LED display."""
         self._datetime = datetime
+
+        self._display.brightness = self._brightness
 
         if self._auto_dst and self._dst:  # changes the text to show DST
             flag_text = self._timezone[0] + "DT"
@@ -140,6 +154,8 @@ class Led14x4Display:
                 hour = hour - 12
             if hour == 0:  # midnight hour fix
                 hour = 12
+
+        ### SET AM/PM INDICATOR ^
 
         if not date:
             if self._colon:
@@ -177,6 +193,7 @@ class Led14x4Display:
 
         # self.panel.play_tone(784, 0.030)  # G5 piezo?
         # self.show(self._xst_datetime, date=True)
+        tone(self._piezo, 784, duration=0.100)  # G5 piezo
 
         while not self._sel_sw.value:  # wait until switch is released
             pass
@@ -204,7 +221,7 @@ class Led14x4Display:
             self._t0 = time.monotonic()  # start timeout clock
             while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # while select switch not pressed
                 self._param_index = self._enc.position
-                self._param_index = max(0, min(6, self._param_index))
+                self._param_index = max(0, min(7, self._param_index))
                 if self._enc.position != self._param_index:
                     self._t0 = time.monotonic()  # start timeout clock over
                 self._enc.position = self._param_index
@@ -219,7 +236,7 @@ class Led14x4Display:
             while not self._sel_sw.value:  # wait for switch to release
                 pass
 
-            if self._param_index == 6:  # EXIT was selected
+            if self._param_index == 7:  # EXIT was selected
                 self._t0 = 0  # force process to skip parameter value section
 
             # Adjust parameter value
@@ -241,35 +258,38 @@ class Led14x4Display:
                     ### display parameter prompt
                     if self._param_index == 0:  # month value
                         self._display.print((self._month[self._param_value - 1]) + " ")
+                        self._changed = True
                     if self._param_index == 2:  # 4-digit year vallue
                         self._display.print("{:04d}".format(self._param_value))
+                        self._changed = True
                     if self._param_index in [1,3,4]:
                         self._display.print("{:02d}  ".format(self._param_value))
+                        self._changed = True
                     if self._param_index == 5:  # sound effects flag
                         if self._param_value == 1:
                             self._display.print("ON  ")
                         else:
                             self._display.print("OFF ")
+                    if self._param_index == 6:  # display _brightness
+                        self._display.brightness = self._param_value
 
                     time.sleep(0.15)
                     self._param_val_list[self._param_index] = self._param_value
-                    self._changed = True
 
                 self._enc.position = self._param_index + 1  # move to next param
-
-                ### adjust edit values
 
                 time.sleep(0.2)
 
             # Select switch pressed
             # self.panel.play_tone(1319, 0.030)  # E6 piezo
+            tone(self._piezo, 880, duration=0.100)  # A5 piezo
 
             while not self._sel_sw.value:  # Wait for select switch release
                 pass
 
         # Exit setup process
         if not self._sel_sw.value:  # Select switch pressed
-            # self.panel.play_tone(784, 0.030)  # G5 piezo?
+            tone(self._piezo, 784, duration=0.100)  # G5 piezo
             pass
         while not self._sel_sw.value:  # Wait for select switch release
             pass
@@ -290,5 +310,5 @@ class Led14x4Display:
             self._display.marquee("-NEW", delay=0.2, loop=False)
             self.show(self._xst_datetime, date=True)
 
-        # return with new datetime, sound flag, and "something changed" flag
+        # return with new datetime, sound flag, and "time was changed" flag
         return self._xst_datetime, self._sound, self._changed
