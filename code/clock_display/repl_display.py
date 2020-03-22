@@ -1,5 +1,5 @@
 # repl_display.py
-# 2020-02-05 Cedar Grove Studios
+# 2020-03-22 Cedar Grove Studios
 
 import time
 
@@ -26,7 +26,6 @@ class ReplDisplay:
     def zone(self):
         """The clock's time zone. Default is Pacific."""
         return self._timezone
-
     @zone.setter
     def zone(self, timezone):
         self._timezone = timezone
@@ -35,7 +34,6 @@ class ReplDisplay:
     def hour_24(self):
         """Display 24-hour or 12-hour AM/PM. Default is 12-hour (False)."""
         return self._hour_24_12
-
     @hour_24.setter
     def hour_24(self, hour_24_12):
         self._hour_24_12 = hour_24_12
@@ -44,7 +42,6 @@ class ReplDisplay:
     def dst(self):
         """Time is US DST. Default is Standard Time (False)."""
         return self._dst
-
     @dst.setter
     def dst(self, dst):
         self._dst = dst
@@ -53,7 +50,6 @@ class ReplDisplay:
     def auto_dst(self):
         """Automatically display US DST. Default is auto DST (True)."""
         return self._auto_dst
-
     @auto_dst.setter
     def auto_dst(self, auto_dst):
         self._auto_dst = auto_dst
@@ -62,10 +58,12 @@ class ReplDisplay:
     def sound(self):
         """Sound is activated. Default is no sound (False)."""
         return self._sound
-
     @sound.setter
     def sound(self, sound=False):
         self._sound = sound
+
+    def tick(self):
+        print("--tick--")
 
     def show(self, datetime):
         """Display time via REPL."""
