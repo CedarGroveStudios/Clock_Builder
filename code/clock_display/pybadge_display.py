@@ -14,7 +14,7 @@ class PyBadgeDisplay:
 
     def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
                  sound=False, brightness=1.0, debug=False):
-        #input parameters
+        # Input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24_12
         self._dst        = False
@@ -22,7 +22,7 @@ class PyBadgeDisplay:
         self._sound      = sound
         self._brightness = brightness
 
-        #other parameters
+        # Other parameters
         self._message    = "PyBadge Clock"
         self._colon      = True
         self._batt_level = 5
@@ -43,12 +43,10 @@ class PyBadgeDisplay:
         self.panel.pixels.fill(0x000000)        # Clear all NeoPixels
         self.panel.play_tone(440, 0.1)          # A4 welcome tone
 
-        # The board's integral display size
+        # The board's integral display size and element size
         WIDTH  = board.DISPLAY.width   # 160 for PyGamer and PyBadge
         HEIGHT = board.DISPLAY.height  # 128 for PyGamer and PyBadge
-
         ELEMENT_SIZE = WIDTH // 4  # Size of element_grid blocks in pixels
-
         board.DISPLAY.brightness = self._brightness
 
         # Default colors
@@ -243,7 +241,6 @@ class PyBadgeDisplay:
     def zone(self):
         """The clock's time zone. Default is Pacific."""
         return self._timezone
-
     @zone.setter
     def zone(self, timezone):
         self._timezone = timezone
@@ -252,7 +249,6 @@ class PyBadgeDisplay:
     def hour_24(self):
         """Display 24-hour or 12-hour AM/PM. Default is 12-hour (False)."""
         return self._hour_24_12
-
     @hour_24.setter
     def hour_24(self, hour_24_12):
         self._hour_24_12 = hour_24_12
@@ -261,7 +257,6 @@ class PyBadgeDisplay:
     def dst(self):
         """Time is US DST. Default is Standard Time (False)."""
         return self._dst
-
     @dst.setter
     def dst(self, dst):
         self._dst = dst
@@ -270,7 +265,6 @@ class PyBadgeDisplay:
     def auto_dst(self):
         """Automatically display US DST. Default is auto DST (True)."""
         return self._auto_dst
-
     @auto_dst.setter
     def auto_dst(self, auto_dst):
         self._auto_dst = auto_dst
@@ -279,7 +273,6 @@ class PyBadgeDisplay:
     def sound(self):
         """Sound is activated. Default is no sound (False)."""
         return self._sound
-
     @sound.setter
     def sound(self, sound=False):
         self._sound = sound
@@ -288,7 +281,6 @@ class PyBadgeDisplay:
     def brightness(self):
         """Display brightness (0 - 1.0). Default full brightness (1.0)."""
         return self._brightness
-
     @brightness.setter
     def brightness(self, brightness=1.0):
         self._brightness = brightness
@@ -298,7 +290,6 @@ class PyBadgeDisplay:
     def colon(self):
         """Display the colon."""
         return self._colon
-
     @colon.setter
     def colon(self, colon=True):
         """Display the colon."""
@@ -312,7 +303,6 @@ class PyBadgeDisplay:
     def battery(self):
         """Display the battery icon."""
         return self._batt_level
-
     @battery.setter
     def battery(self, volts=0):
         """Display the battery icon."""
@@ -334,7 +324,7 @@ class PyBadgeDisplay:
         else:
             self._clock_auto_dst.text = ""
 
-        self._hour = self._datetime.tm_hour  # Format for 24-hour or 12-hour output
+        self._hour = self._datetime.tm_hour  # Format 24-hour or 12-hour output
         if self._hour_24_12:  # 24-hour
             self._clock_ampm.text = "  "
         else:  # 12-hour clock with AM/PM
@@ -355,14 +345,12 @@ class PyBadgeDisplay:
         self._clock_month.text = self._month[self._datetime.tm_mon - 1]
         self._clock_mday.text  = "{:02d}".format(self._datetime.tm_mday)
         self._clock_year.text  = "{:04d}".format(self._datetime.tm_year)
-
         self._clock_digits_hour.text = "{:02}".format(self._hour)
         self._clock_digits_min.text  = "{:02}".format(self._datetime.tm_min)
         if self._colon:
             self._clock_digits_colon.text = ":"
         else:
             self._clock_digits_colon.text = ""
-
         board.DISPLAY.show(self._image_group)  # Load display
         time.sleep(0.1)  # Allow display to load
         return
@@ -389,8 +377,8 @@ class PyBadgeDisplay:
         self._xst_datetime = xst_datetime
 
         if not self.panel.button.start:
-            return self._xst_datetime, self._sound, False  # return datetime, sound flag, and "no change" flag
-
+            # Return datetime, sound flag, and "no change" flag
+            return self._xst_datetime, self._sound, False
         self.panel.play_tone(784, 0.030)  # G5
         while self.panel.button.start:
             pass
@@ -408,7 +396,6 @@ class PyBadgeDisplay:
             self._clock_auto_dst.text = "-OFF-"
 
         self._param_index = 0  # Reset index of parameter list
-
         # Select parameter to change
         while not self.panel.button.start:  # start button exits setup process
             while (not (self.panel.button.up or self.panel.button.down)) and (not self.panel.button.start):
@@ -421,7 +408,6 @@ class PyBadgeDisplay:
                 time.sleep(0.15)
                 self._image_group[self._param_index].color = self.BLUE
                 time.sleep(0.15)
-
             if self.panel.button.up or self.panel.button.down:
                 self.panel.play_tone(1319, 0.030)  # E6
 
@@ -431,10 +417,8 @@ class PyBadgeDisplay:
 
                 if self._label_edits[self._param_index][0] in ("int2", "int4"):
                     self._param_value = int(self._image_group[self._param_index].text)
-
                 if self._label_edits[self._param_index][0] == "month":
                     self._param_value = self._month.index(self._image_group[self._param_index].text)
-
                 if self._label_edits[self._param_index][0] == "boolean":
                     self._param_value = 0
                     if self._image_group[self._param_index].text in ("sFX", "AutoDST"):
@@ -455,7 +439,6 @@ class PyBadgeDisplay:
                     self._param_value = max(self._param_min,
                                             min(self._param_max, self._param_value))
                     self._image_group[self._param_index].text = str("{:02}".format(self._param_value))
-
                 if self._label_edits[self._param_index][0] == "int4":
                     self._image_group[self._param_index].color = self.GREEN
                     self._param_min   = self._label_edits[self._param_index][1]
@@ -463,7 +446,6 @@ class PyBadgeDisplay:
                     self._param_value = max(self._param_min,
                                             min(self._param_max, self._param_value))
                     self._image_group[self._param_index].text = str("{:04}".format(self._param_value))
-
                 if self._label_edits[self._param_index][0] == "month":
                     self._image_group[self._param_index].color = self.GREEN
                     self._param_min   = self._label_edits[self._param_index][1] - 1
@@ -471,7 +453,6 @@ class PyBadgeDisplay:
                     self._param_value = max(self._param_min,
                                             min(self._param_max, self._param_value))
                     self._image_group[self._param_index].text = self._month[self._param_value]
-
                 if self._label_edits[self._param_index][0] == "boolean":
                     self._param_min   = self._label_edits[self._param_index][1]
                     self._param_max   = self._label_edits[self._param_index][2]
@@ -493,11 +474,8 @@ class PyBadgeDisplay:
                         elif self._param_index == 8:
                             self._image_group[self._param_index].text  = "-OFF-"
                             self._auto_dst = False
-
                 time.sleep(.2)
-
             # optional: update changed flag only when a param value is changed
-
             self._image_group[self._param_index].color = self.BLUE
 
             if self.panel.button.left or self.panel.button.right:
@@ -514,7 +492,6 @@ class PyBadgeDisplay:
         set_dom = int(self._clock_mday.text)
         set_hr  = int(self._clock_digits_hour.text)
         set_min = int(self._clock_digits_min.text)
-
         # Build structured time:             ((year, mon, date, hour,
         #                                      min, sec, wday, yday, isdst))
         self._xst_datetime = time.struct_time((set_yr, set_mon, set_dom, set_hr,
