@@ -4,6 +4,8 @@
 
 ![Clock_Builder](https://github.com/CedarGroveStudios/Clock_Builder/blob/master/clock_builder.png)
 
+The __examples__ folder contains primary methods for PyBadge, FeatherM4 w/LED display, and a REPL-only clock.
+
 Clock_Builder currently supports:
 
 Real-time clock modules:
