@@ -1,5 +1,5 @@
-# led_7x4seg.py
-# Class for "standard" LED display with rotary encoder time set function
+# led_14x4_display.py
+# Class for 14-segment LED display with rotary encoder time set function
 # 2020-03-22 Cedar Grove Studios
 
 import time
@@ -7,10 +7,10 @@ import board
 import rotaryio
 from digitalio                 import DigitalInOut, Direction, Pull
 import rotaryio as enc
-from adafruit_ht16k33.segments import BigSeg7x4
+from adafruit_ht16k33.segments import Seg14x4
 from simpleio                  import tone
 
-class BigLed7x4Display:
+class Led14x4Display:
 
     def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
                  sound=False, brightness=15, debug=False):
@@ -24,10 +24,13 @@ class BigLed7x4Display:
         self._message    = "    "
         self._brightness = brightness
 
-        self._param_list = [("1-12", 1, 12), ("1-31", 1, 31),
-                            ("20--", 2010, 2037), ("0-23", 0, 23),
-                            ("0-59", 0, 59), ("BEE-", 0, 1), ("1ED ", 1, 15),
-                            ("----", 0, 0)]
+        self._weekday    = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        self._month      = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+                            "Aug", "Sep", "Oct", "Nov", "Dec"]
+        self._param_list = [("MNTH", 1, 12), ("DATE", 1, 31),
+                            ("YEAR", 2010, 2037), ("24HR", 0, 23),
+                            ("MIN ", 0, 59), ("SFX ", 0, 1), ("BRT ", 1, 15),
+                            ("EXIT", 0, 0)]
 
         # Holder for parameter values
         self._param_val_list = [0, 0, 0, 0, 0, self._sound, self._brightness]
@@ -41,10 +44,11 @@ class BigLed7x4Display:
         self._piezo = board.D13  # Shared with L13 LED
         # Display
         i2c = board.I2C()
-        self._display = BigSeg7x4(i2c, address=0x70)
+        self._display = Seg14x4(i2c, address=0x70)
         self._display.brightness = brightness
         self._display.fill(0)  # Clear the display
         self._display.print("----")
+        self._display.show()
 
         # Debug parameters
         self._debug = debug
@@ -90,14 +94,14 @@ class BigLed7x4Display:
         return self._sound
     @sound.setter
     def sound(self, sound):
-        self._dst = sound
+        self._sound = sound
 
     @property
     def brightness(self):
         """Display brightness. Default is 15 (maximum)."""
         return self._brightness
     @brightness.setter
-    def brightness(self, brightness=15):
+    def brightness(self, brightness):
         self._brightness = brightness
 
     @property
@@ -113,6 +117,7 @@ class BigLed7x4Display:
     def message(self):
         """Display message."""
         return self._message
+
     @message.setter
     def message(self, text=""):
         tone(self._piezo, 880, duration=0.5)
@@ -127,40 +132,42 @@ class BigLed7x4Display:
         """Display time via LED display."""
         self._datetime           = datetime
         self._display.brightness = self._brightness
-        hour = self._datetime.tm_hour  # Format for 24-hour or 12-hour output
+        hour = self._datetime.tm_hour     # Format for 24-hour or 12-hour output
 
-        if not self._hour_24_12:       # 12-hour
-            if hour >= 12:
+        if self._auto_dst and self._dst:  # Changes the text to show DST
+            self._xst_text = self._timezone[0] + "DT"
+        else:  # or Standard Time
+            self._xst_text = self._timezone[0] + "ST"
+
+        if not self._hour_24_12:          # 12-hour
+            if hour >= 12:                # PM
                 hour = hour - 12
-                self._display.top_left_dot    = True
-                self._display.bottom_left_dot = False
             else:
-                self._display.top_left_dot    = False
-                self._display.bottom_left_dot = True
-            if hour == 0:  # Midnight hour fix
+                pass                       # AM
+            if hour == 0:                  # Midnight hour fix
                 hour = 12
-        else:
-            self._display.top_left_dot    = False
-            self._display.bottom_left_dot = False
 
         if not date:
             if self._colon:
-                self._display.colon = True
+                self._display.print("{:02}.{:02}".format(hour, self._datetime.tm_min))
             else:
-                self._display.colon = False
-            self._display.print("{:02}{:02}".format(hour, self._datetime.tm_min))
+                self._display.print("{:02}{:02}".format(hour, self._datetime.tm_min))
         else:
-            self._clock_month = "{:02d}".format(self._datetime.tm_mon)
+            self._clock_wday  = self._weekday[self._datetime.tm_wday]
+            self._clock_month = self._month[self._datetime.tm_mon - 1]
             self._clock_mday  = "{:02d}".format(self._datetime.tm_mday)
             self._clock_year  = "{:04d}".format(self._datetime.tm_year)
             self._clock_digits_hour = "{:02}".format(hour)
             self._clock_digits_min  = "{:02}".format(self._datetime.tm_min)
 
-            self._display.marquee(self._clock_month +
-                                  "-" + self._clock_mday + "-" +
-                                  self._clock_year + "    ", delay=0.2,
+            self._display.marquee(self._clock_wday + " " + self._clock_month +
+                                  " " + self._clock_mday + ", " +
+                                  self._clock_year + " " + self._xst_text +
+                                  " " + self._clock_digits_hour + "." +
+                                  self._clock_digits_min, delay=0.2,
                                   loop=False)
             time.sleep(0.5)
+        # self._display.show()
         return
 
     def set_datetime(self, xst_datetime):
@@ -169,13 +176,13 @@ class BigLed7x4Display:
         self._display.colon = False
 
         if self._sel_sw.value:  # Select switch not pressed
-            # return datetime, sound flag, and "no change" flag
+            # Return datetime, sound flag, and "no change" flag
             return self._xst_datetime, self._sound, False
-        tone(self._piezo, 784, duration=0.300)  # G5 piezo
-        while not self._sel_sw.value:  # Wait until switch is released
+        tone(self._piezo, 784, duration=0.100)  # G5 piezo
+        while not self._sel_sw.value:  # wait until switch is released
             pass
-
-        self.show(self._xst_datetime, date=True)
+        self._display.marquee("- SET XST 24-HR -    ", delay=0.15,
+                              loop=False)
         time.sleep(0.5)
 
         self._param_val_list[0] = self._xst_datetime.tm_mon
@@ -192,10 +199,10 @@ class BigLed7x4Display:
         self._changed      = False  # Reset edit change flag
 
         # Select parameter to change
-        self._t0 = time.monotonic()      # Start the timeout clock
+        self._t0 = time.monotonic()  # Start the timeout clock
         # While select switch not pressed
         while self._sel_sw.value and time.monotonic() - self._t0 < 10:
-            self._t0 = time.monotonic()  # Start the timeout clock
+            self._t0 = time.monotonic()  # start timeout clock
             # While select switch not pressed
             while self._sel_sw.value and time.monotonic() - self._t0 < 10:
                 self._param_index = self._enc.position
@@ -210,14 +217,14 @@ class BigLed7x4Display:
 
             # Select switch pressed
             tone(self._piezo, 880, duration=0.3)  # A5 piezo
-            while not self._sel_sw.value:         # Wait for switch to release
+            while not self._sel_sw.value:  # wait for switch to release
                 pass
 
             if self._param_index == 7:  # EXIT was selected
-                self._t0 = 0            # Force process to skip value section
+                self._t0 = 0            # force process to skip parameter value section
 
             # Adjust parameter value
-            while self._sel_sw.value and time.monotonic() - self._t0 < 5:  # Select switch not pressed
+            while self._sel_sw.value and time.monotonic() - self._t0 < 5:  # select switch not pressed
                 self._changed = False
 
                 # Parameter edits and actions
@@ -235,19 +242,19 @@ class BigLed7x4Display:
 
                     # Display parameter prompt
                     if self._param_index == 0:  # Month value
-                        self._display.print("{:02d}  ".format(self._month[self._param_value - 1]))
+                        self._display.print((self._month[self._param_value - 1]) + " ")
                         self._changed = True
                     if self._param_index == 2:  # 4-digit year vallue
                         self._display.print("{:04d}".format(self._param_value))
                         self._changed = True
                     if self._param_index in [1,3,4]:
-                        self._display.print("  {:02d}".format(self._param_value))
+                        self._display.print("{:02d}  ".format(self._param_value))
                         self._changed = True
                     if self._param_index == 5:  # Sound effects flag
                         if self._param_value == 1:
-                            self._display.print("   1")
+                            self._display.print("ON  ")
                         else:
-                            self._display.print("   0")
+                            self._display.print("OFF ")
                     if self._param_index == 6:  # Display _brightness
                         self._brightness = self._param_value
                         self._display.brightness = self._brightness
@@ -258,7 +265,7 @@ class BigLed7x4Display:
                 time.sleep(0.2)
 
             # Select switch pressed
-            tone(self._piezo, 880, duration=0.3)  # A5 piezo
+            tone(self._piezo, 880, duration=0.100)  # A5 piezo
             while not self._sel_sw.value:  # Wait for select switch release
                 pass
         time.sleep(0.2)
@@ -281,7 +288,7 @@ class BigLed7x4Display:
         self._xst_datetime = time.localtime(time.mktime(self._xst_datetime))
 
         if self._changed:
-            self._display.marquee("-   ", delay=0.2, loop=False)
+            self._display.marquee("-NEW", delay=0.2, loop=False)
             self.show(self._xst_datetime, date=True)
 
         tone(self._piezo, 784, duration=0.3)  # G5 piezo

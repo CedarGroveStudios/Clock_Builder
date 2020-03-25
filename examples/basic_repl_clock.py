@@ -5,7 +5,7 @@
 import time
 import board
 import adafruit_ds3231
-from unit_converter.chronos import adjust_dst
+from cedargrove_unit_converter.chronos import adjust_dst
 
 i2c = board.I2C()
 ds3231 = adafruit_ds3231.DS3231(i2c)

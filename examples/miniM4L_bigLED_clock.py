@@ -10,13 +10,13 @@ import board
 import neopixel as neo  # Feather M4
 from   simpleio import map_range, tone
 import adafruit_ds3231
-from   analogio                      import AnalogIn
-from   unit_converter.chronos        import adjust_dst
-from   clock_display.repl_display    import ReplDisplay
-# from   clock_display.pybadge_display import PyBadgeDisplay  # PyBadge display
-# from   clock_display.led_14x4seg     import Led14x4Display  # 14-segment LED
-# from   clock_display.led_7x4seg      import Led7x4Display   # 7-segment LED
-from   clock_display.bigled_7x4seg   import BigLed7x4Display   # 7-segment LED
+from   analogio import AnalogIn
+from   cedargrove_unit_converter.chronos        import adjust_dst
+from   cedargrove_clock_builder.repl_display    import ReplDisplay
+# from   cedargrove_clock_builder.pybadge_display import PyBadgeDisplay  # PyBadge display
+# from   cedargrove_clock_builder.led_14x4seg     import Led14x4Display  # 14-segment LED
+# from   cedargrove_clock_builder.led_7x4seg      import Led7x4Display   # 7-segment LED
+from   cedargrove_clock_builder.bigled_7x4seg   import BigLed7x4Display   # 7-segment LED
 
 i2c = board.I2C()
 ds3231 = adafruit_ds3231.DS3231(i2c)
