@@ -11,11 +11,11 @@ from simpleio                  import tone
 
 class BigLed7x4Display:
 
-    def __init__(self, timezone="Pacific", hour_24_12=False, auto_dst=True,
+    def __init__(self, timezone="Pacific", hour_24=False, auto_dst=True,
                  sound=False, brightness=15, debug=False):
         # Input parameters
         self._timezone   = timezone
-        self._hour_24_12 = hour_24_12
+        self._hour_24_12 = hour_24
         self._dst        = False
         self._auto_dst   = auto_dst
         self._sound      = sound
@@ -52,11 +52,19 @@ class BigLed7x4Display:
             print("*Init: ", self.__dict__)
 
     @property
+    def message(self):
+        """Update message text."""
+        return self._message
+    @message.setter
+    def message(self, text=""):
+        self._message = text
+
+    @property
     def zone(self):
         """The clock's time zone. Default is Pacific."""
         return self._timezone
     @zone.setter
-    def zone(self, timezone):
+    def zone(self, timezone="Pacific"):
         self._timezone = timezone
 
     @property
@@ -64,8 +72,8 @@ class BigLed7x4Display:
         """Display 24-hour or 12-hour AM/PM. Default is 12-hour (False)."""
         return self._hour_24_12
     @hour_24.setter
-    def hour_24(self, hour_24_12):
-        self._hour_24_12 = hour_24_12
+    def hour_24(self, hour_24=False):
+        self._hour_24_12 = hour_24
 
     @property
     def dst(self):
@@ -108,15 +116,13 @@ class BigLed7x4Display:
         """Display the colon."""
         self._colon = colon
 
-    @property
-    def message(self):
-        """Display message."""
-        return self._message
-    @message.setter
-    def message(self, text=""):
-        tone(self._piezo, 880, duration=0.5)
-        self._message = text + "    "
-        self._display.marquee(self._message, delay=0.2, loop=False)
+    def alert(self, text=""):
+        """Display alert message. Default is the previous message."""
+        self._msg_text = text
+        if self._msg_text != "":
+            tone(self._piezo, 880, duration=0.5)
+            self._message = text + "    "
+            self._display.marquee(self._message, delay=0.2, loop=False)
 
     def tick(self):
         """Make tick sound via piezo."""

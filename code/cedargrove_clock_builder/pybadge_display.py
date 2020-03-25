@@ -16,16 +16,16 @@ class PyBadgeDisplay:
                  sound=False, brightness=1.0, debug=False):
         # Input parameters
         self._timezone   = timezone
-        self._hour_24_12 = hour_24_12
+        self._hour_24_12 = hour_24
         self._dst        = False
         self._auto_dst   = auto_dst
         self._sound      = sound
         self._brightness = brightness
 
         # Other parameters
-        self._message    = "PyBadge Clock"
-        self._colon      = True
-        self._batt_level = 5
+        self._message     = "PyBadge Clock"
+        self._colon       = True
+        self._batt_level  = 0   # Default battery level
         self._label_edits = []  # label edit attributes
         self._label_restore_color = []  # for restoring text color values
 
@@ -217,25 +217,11 @@ class PyBadgeDisplay:
 
     @property
     def message(self):
-        """Place message in clock message area."""
+        """Update the clock's message text. Default is a blank message."""
         return self._clock_message.text
-
     @message.setter
     def message(self, text=""):
-        self._msg_text = text[:20]
-        if self._msg_text == "":
-            self._clock_message.text = self._message
-        else:
-            self._clock_message.color = self.RED
-            self._clock_message.text = self._msg_text
-            self.panel.play_tone(880, 0.100)  # A5
-            self._clock_message.color = self.YELLOW
-            self.panel.play_tone(880, 0.100)  # A5
-            self._clock_message.color = self.RED
-            self.panel.play_tone(880, 0.100)  # A5
-            self._clock_message.color = self.YELLOW
-            time.sleep(1)
-            self._clock_message.color = self.VIOLET
+        self._message = text[:20]
 
     @property
     def zone(self):
@@ -250,8 +236,8 @@ class PyBadgeDisplay:
         """Display 24-hour or 12-hour AM/PM. Default is 12-hour (False)."""
         return self._hour_24_12
     @hour_24.setter
-    def hour_24(self, hour_24_12=False):
-        self._hour_24_12 = hour_24_12
+    def hour_24(self, hour_24=False):
+        self._hour_24_12 = hour_24
 
     @property
     def dst(self):
@@ -266,7 +252,7 @@ class PyBadgeDisplay:
         """Automatically display US DST. Default is auto DST (True)."""
         return self._auto_dst
     @auto_dst.setter
-    def auto_dst(self, auto_dst):
+    def auto_dst(self, auto_dst=True):
         self._auto_dst = auto_dst
 
     @property
@@ -279,7 +265,7 @@ class PyBadgeDisplay:
 
     @property
     def brightness(self):
-        """Display brightness (0 - 1.0). Default full brightness (1.0)."""
+        """Display brightness (0 - 1.0). Default is full brightness (1.0)."""
         return self._brightness
     @brightness.setter
     def brightness(self, brightness=1.0):
@@ -292,7 +278,7 @@ class PyBadgeDisplay:
         return self._colon
     @colon.setter
     def colon(self, colon=True):
-        """Display the colon."""
+        """Display the colon. Default is display colon (True)."""
         self._colon = colon
         if self._colon:
             self._clock_digits_colon.text = ":"
@@ -305,10 +291,32 @@ class PyBadgeDisplay:
         return self._batt_level
     @battery.setter
     def battery(self, volts=0):
-        """Display the battery icon."""
+        """Display the battery icon. Default is zero volts (0)"""
         self._batt_volts   = volts
         self._batt_level   = int(map_range(self._batt_volts, 3.35, 4.15, 0, 5))
         self._batt_icon[0] = self._batt_level
+
+    def tick(self):
+        """Play tick sound."""
+        self.panel.play_file("/clock_display/tick_soft.wav")
+        return
+
+    def alert(self, text=""):
+        """Place alert message in clock message area. Default is the previous message."""
+        self._msg_text = text[:20]
+        if self._msg_text == "":
+            self._clock_message.text = self._message
+        else:
+            self._clock_message.color = self.RED
+            self._clock_message.text = self._msg_text
+            self.panel.play_tone(880, 0.100)  # A5
+            self._clock_message.color = self.YELLOW
+            self.panel.play_tone(880, 0.100)  # A5
+            self._clock_message.color = self.RED
+            self.panel.play_tone(880, 0.100)  # A5
+            self._clock_message.color = self.YELLOW
+            time.sleep(1)
+            self._clock_message.color = self.VIOLET
 
     def show(self, datetime):
         """Display time via REPL. The primary function of this class."""
@@ -353,11 +361,6 @@ class PyBadgeDisplay:
             self._clock_digits_colon.text = ""
         board.DISPLAY.show(self._image_group)  # Load display
         time.sleep(0.1)  # Allow display to load
-        return
-
-    def tick(self):
-        """Play tick sound."""
-        self.panel.play_file("/clock_display/tick_soft.wav")
         return
 
     def _dim(self, color=0X0000FF):

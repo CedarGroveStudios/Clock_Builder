@@ -13,6 +13,7 @@ class ReplDisplay:
         self._dst        = False
         self._auto_dst   = auto_dst
         self._sound      = sound
+        self._message    = "REPL Clock"
 
         self._weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -21,6 +22,14 @@ class ReplDisplay:
         if self._debug:
             print("*Init:", self.__class__)
             print("*Init: ", self.__dict__)
+
+    @property
+    def message(self):
+        """Update the clock message text. Default is a blank message."""
+        return self._message
+    @message.setter
+    def message(self, text=""):
+        self._message = text
 
     @property
     def zone(self):
@@ -63,7 +72,11 @@ class ReplDisplay:
         self._sound = sound
 
     def tick(self):
-        print("--tick--")
+        print("<tick>")
+
+    def alert(self, text=""):
+        print("--ALERT--")
+        print(text)
 
     def show(self, datetime):
         """Display time via REPL."""
