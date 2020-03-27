@@ -1,4 +1,4 @@
-# basic_repl_clock.py
+# clock_repl.py
 # 2020-01-31 Cedar Grove Studios
 # uses cedargrove unit_converter library
 
