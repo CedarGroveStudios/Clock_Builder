@@ -12,7 +12,7 @@ from simpleio                  import tone
 class BigLed7x4Display:
 
     def __init__(self, timezone="Pacific", hour_24=False, auto_dst=True,
-                 sound=False, brightness=15, debug=False):
+                 sound=False, brightness=1.0, debug=False):
         # Input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24
@@ -101,10 +101,10 @@ class BigLed7x4Display:
 
     @property
     def brightness(self):
-        """Display brightness. Default is 15 (maximum)."""
+        """Display brightness. Default is 1.0 (maximum)."""
         return self._brightness
     @brightness.setter
-    def brightness(self, brightness=15):
+    def brightness(self, brightness=1.0):
         self._brightness = brightness
 
     @property
