@@ -29,7 +29,7 @@ class BigLed7x4Display:
                             ("----", 0, 0)]
 
         # Holder for parameter values
-        self._param_val_list = [0, 0, 0, 0, 0, self._sound, self._brightness]
+        self._param_val_list = [0, 0, 0, 0, 0, self._sound, int(self._brightness * 10)]
 
         # Rotary encoder
         self._sel_sw = DigitalInOut(board.D9)
@@ -227,7 +227,7 @@ class BigLed7x4Display:
 
                 # Parameter edits and actions
                 self._t0 = time.monotonic()  # Start the timeout clock
-                self._enc.position = int(self._param_val_list[self._param_index] * 10)
+                self._enc.position = self._param_val_list[self._param_index]
                 # While select switch not pressed
                 while self._sel_sw.value and time.monotonic() - self._t0 < 10:
                     self._param_value = self._enc.position
@@ -258,7 +258,7 @@ class BigLed7x4Display:
                         self._display.brightness = self._brightness
                         self._display.print("  {:02d}".format(self._param_value))
                     time.sleep(0.2)
-                    self._param_val_list[self._param_index] = self._param_value / 10
+                    self._param_val_list[self._param_index] = self._param_value
                 self._enc.position = self._param_index + 1  # Move to next param
                 time.sleep(0.2)
 
