@@ -29,7 +29,7 @@ class Led14x4Display:
                             "Aug", "Sep", "Oct", "Nov", "Dec"]
         self._param_list = [("MNTH", 1, 12), ("DATE", 1, 31),
                             ("YEAR", 2010, 2037), ("24HR", 0, 23),
-                            ("MIN ", 0, 59), ("SFX ", 0, 1), ("BRT ", 1, 15),
+                            ("MIN ", 0, 59), ("SFX ", 0, 1), ("BRT ", 1, 10),
                             ("EXIT", 0, 0)]
 
         # Holder for parameter values
@@ -39,7 +39,7 @@ class Led14x4Display:
         self._sel_sw = DigitalInOut(board.D9)
         self._sel_sw.direction = Direction.INPUT
         self._sel_sw.pull = Pull.UP
-        self._enc = rotaryio.IncrementalEncoder(board.D5, board.D6)
+        self._enc = enc.IncrementalEncoder(board.D5, board.D6)
         # Piezo speaker
         self._piezo = board.D13  # Shared with L13 LED
         # Display
@@ -261,11 +261,11 @@ class Led14x4Display:
                         else:
                             self._display.print("OFF ")
                     if self._param_index == 6:  # Display _brightness
-                        self._brightness = self._param_value
+                        self._brightness = self._param_value / 10
                         self._display.brightness = self._brightness
-                        self._display.print("  {:02d}".format(self._brightness))
+                        self._display.print("  {:02d}".format(self._param_value))
                     time.sleep(0.2)
-                    self._param_val_list[self._param_index] = self._param_value
+                    self._param_val_list[self._param_index] = self._param_value / 10
                 self._enc.position = self._param_index + 1  # Move to next param
                 time.sleep(0.2)
 
