@@ -1,10 +1,9 @@
-# bigled_7x4_display.py
-# Class for 1.2-inch "Big" LED display with rotary encoder time set function
+# led_7x4_display.py
+# Class for "standard" LED display with rotary encoder time set function
 # 2020-03-22 Cedar Grove Studios
 
 import time
 import board
-import rotaryio
 from digitalio                 import DigitalInOut, Direction, Pull
 import rotaryio as enc
 from adafruit_ht16k33.segments import Seg7x4
@@ -26,7 +25,7 @@ class Led7x4Display:
 
         self._param_list = [("1-12", 1, 12), ("1-31", 1, 31),
                             ("20--", 2010, 2037), ("0-23", 0, 23),
-                            ("0-59", 0, 59), ("BEE-", 0, 1), ("1ED ", 1, 10),
+                            ("0-59", 0, 59), ("", 0, 1), ("", 1, 10),
                             ("----", 0, 0)]
 
         # Holder for parameter values
@@ -125,6 +124,26 @@ class Led7x4Display:
             self._message = text + "    "
             self._display.marquee(self._message, delay=0.2, loop=False)
 
+    def _param_text(self, index=0):
+        """ Display parameter index legend. """
+        if index in (0, 1, 2, 3, 4, 7):
+            self._display.print(self._param_list[self._param_index][0])
+        if index == 5:
+            # BEEP
+            self._display.fill(0)
+            self._display.set_digit_raw(0, 0b01111111)
+            self._display.set_digit_raw(1, 0b01111001)
+            self._display.set_digit_raw(2, 0b01111001)
+            self._display.set_digit_raw(3, 0b01110011)
+        if index == 6:
+            # LED
+            self._display.fill(0)
+            self._display.set_digit_raw(0, 0b00000000)
+            self._display.set_digit_raw(1, 0b00111000)
+            self._display.set_digit_raw(2, 0b01111001)
+            self._display.set_digit_raw(3, 0b01011110)
+        return
+
     def tick(self):
         """Make tick sound via piezo."""
         tone(self._piezo, 256, duration=0.030)
@@ -211,7 +230,7 @@ class Led7x4Display:
                 self._enc.position = self._param_index
 
                 ### Display parameter prompt
-                self._display.print(self._param_list[self._param_index][0])
+                self._param_text(self._param_index)
                 time.sleep(0.15)
 
             # Select switch pressed
