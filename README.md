@@ -6,6 +6,8 @@
 
 The __examples__ folder contains primary methods for PyBadge, FeatherM4 w/LED display, and a REPL-only clock.
 
+This library and examples are compatible with CircuitPython 5.0.0 and newer.
+
 __Clock_Builder__ currently supports:
 
 _Real-time clock modules:_
