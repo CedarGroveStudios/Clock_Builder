@@ -22,6 +22,11 @@ _Time Setting:_
 - Time setting for the FeatherM4Express is via a rotary encoder connected to pins D5, D6, D9, and GND. 
 - REPL time setting via USB using Python's __input()__ statement is supported.
 
+_Sound:_
+- Sound output for the PyGamer is through the integrated speaker. 
+- Sound output for the FeatherM4Express is via a piezo speaker attached to GPIO pin 13 and GND. 
+- REPL sound is simulated.
+
 Future support is planned for OLED displays and GPIO-connected time setting buttons.
 
 See the __CedarGroveStudios/Unit_Converter__ repository for a compatible automatic North American Daylight Saving Time method.
