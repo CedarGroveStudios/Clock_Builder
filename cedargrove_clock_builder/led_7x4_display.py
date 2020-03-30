@@ -6,10 +6,10 @@ import time
 import board
 from digitalio                 import DigitalInOut, Direction, Pull
 import rotaryio as enc
-from adafruit_ht16k33.segments import BigSeg7x4
+from adafruit_ht16k33.segments import Seg7x4
 from simpleio                  import tone
 
-class BigLed7x4Display:
+class Led7x4Display:
 
     def __init__(self, timezone="Pacific", hour_24=False, auto_dst=True,
                  sound=False, brightness=1.0, debug=False):
@@ -40,7 +40,7 @@ class BigLed7x4Display:
         self._piezo = board.D13  # Shared with L13 LED
         # Display
         i2c = board.I2C()
-        self._display = BigSeg7x4(i2c, address=0x70)
+        self._display = Seg7x4(i2c, address=0x70)
         self._display.brightness = brightness
         self._display.fill(0)  # Clear the display
         self._display.print("----")
@@ -260,7 +260,7 @@ class BigLed7x4Display:
 
                     # Display parameter prompt
                     if self._param_index == 0:  # Month value
-                        self._display.print("{:02d}  ".format(self._month[self._param_value - 1]))
+                        self._display.print("{:02d}  ".format(self._param_value))
                         self._changed = True
                     if self._param_index == 2:  # 4-digit year vallue
                         self._display.print("{:04d}".format(self._param_value))
