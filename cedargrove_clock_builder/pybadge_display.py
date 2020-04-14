@@ -78,7 +78,7 @@ class PyBadgeDisplay:
         self._label_edits.append(None)
 
         # Battery indicator tile grid; image_group[1]
-        self._sprite_sheet, self._palette = adafruit_imageload.load("/clock_display/batt_sprite_sheet.bmp",
+        self._sprite_sheet, self._palette = adafruit_imageload.load("/cedargrove_clock_builder/batt_sprite_sheet.bmp",
                                                                     bitmap=displayio.Bitmap,
                                                                     palette=displayio.Palette)
         self._batt_icon = displayio.TileGrid(self._sprite_sheet,
