@@ -173,12 +173,12 @@ class Led7x4Display:
                 self._display.colon = True
             else:
                 self._display.colon = False
-            self._display.print("{:02}{:02}".format(hour, self._datetime.tm_min))
+            self._display.print("{:2}{:02}".format(hour, self._datetime.tm_min))
         else:
             self._clock_month = "{:02d}".format(self._datetime.tm_mon)
             self._clock_mday  = "{:02d}".format(self._datetime.tm_mday)
             self._clock_year  = "{:04d}".format(self._datetime.tm_year)
-            self._clock_digits_hour = "{:02}".format(hour)
+            self._clock_digits_hour = "{:2}".format(hour)
             self._clock_digits_min  = "{:02}".format(self._datetime.tm_min)
 
             self._display.marquee(self._clock_month +
