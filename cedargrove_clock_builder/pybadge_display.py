@@ -353,8 +353,8 @@ class PyBadgeDisplay:
         self._clock_month.text = self._month[self._datetime.tm_mon - 1]
         self._clock_mday.text  = "{:02d}".format(self._datetime.tm_mday)
         self._clock_year.text  = "{:04d}".format(self._datetime.tm_year)
-        self._clock_digits_hour.text = "{:02}".format(self._hour)
-        self._clock_digits_min.text  = "{:02}".format(self._datetime.tm_min)
+        self._clock_digits_hour.text = "{:02d}".format(self._hour)
+        self._clock_digits_min.text  = "{:02d}".format(self._datetime.tm_min)
         if self._colon:
             self._clock_digits_colon.text = ":"
         else:
