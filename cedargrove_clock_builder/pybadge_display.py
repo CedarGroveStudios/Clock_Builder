@@ -298,7 +298,7 @@ class PyBadgeDisplay:
 
     def tick(self):
         """Play tick sound."""
-        self.panel.play_file("/clock_display/tick_soft.wav")
+        self.panel.play_file("/cedargrove_clock_builder/tick_soft.wav")
         return
 
     def alert(self, text=""):
