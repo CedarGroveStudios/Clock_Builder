@@ -35,7 +35,7 @@ class BigLed7x4Display:
         self._sel_sw = DigitalInOut(board.D9)
         self._sel_sw.direction = Direction.INPUT
         self._sel_sw.pull = Pull.UP
-        self._enc = enc.IncrementalEncoder(board.D5, board.D6)
+        self._enc = enc.IncrementalEncoder(board.D6, board.D5)
         # Piezo speaker
         self._piezo = board.D13  # Shared with L13 LED
         # Display
