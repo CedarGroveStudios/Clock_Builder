@@ -243,8 +243,7 @@ class BigLed7x4Display:
 
             # Adjust parameter value
             # While select switch not pressed
-            while self._sel_sw.value and time.monotonic() - self._t0 < 10:  # Select switch not pressed
-                # self._changed = False
+            while self._sel_sw.value and time.monotonic() - self._t0 < 10:
 
                 # Parameter edits and actions
                 self._t0 = time.monotonic()  # Start the timeout clock

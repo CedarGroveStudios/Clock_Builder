@@ -217,16 +217,16 @@ class Led7x4Display:
         self._changed      = False  # Reset edit change flag
 
         # Select parameter to change
-        self._t0 = time.monotonic()      # Start the timeout clock
+        self._t0 = time.monotonic()      # Start the 10-second timeout clock
         # While select switch not pressed
         while self._sel_sw.value and time.monotonic() - self._t0 < 10:
-            self._t0 = time.monotonic()  # Start the timeout clock
+            self._t0 = time.monotonic()  # Reset the timeout clock
             # While select switch not pressed
             while self._sel_sw.value and time.monotonic() - self._t0 < 10:
                 self._param_index = self._enc.position
                 self._param_index = max(0, min(7, self._param_index))
                 if self._enc.position != self._param_index:
-                    self._t0 = time.monotonic()  # Start the timeout clock
+                    self._t0 = time.monotonic()  # Reset the timeout clock
                 self._enc.position = self._param_index
 
                 ### Display parameter prompt
@@ -242,8 +242,8 @@ class Led7x4Display:
                 self._t0 = 0            # Force process to skip value section
 
             # Adjust parameter value
-            while self._sel_sw.value and time.monotonic() - self._t0 < 5:  # Select switch not pressed
-                self._changed = False
+            # While select switch not pressed
+            while self._sel_sw.value and time.monotonic() - self._t0 < 10:
 
                 # Parameter edits and actions
                 self._t0 = time.monotonic()  # Start the timeout clock
@@ -255,7 +255,7 @@ class Led7x4Display:
                     self._max = self._param_list[self._param_index][2]  # Max
                     self._param_value = max(self._min, min(self._max, self._param_value))
                     if self._enc.position != self._param_value:
-                        self._t0 = time.monotonic()  # Start the timeout clock
+                        self._t0 = time.monotonic()  # Reset the timeout clock
                     self._enc.position = self._param_value
 
                     # Display parameter prompt
