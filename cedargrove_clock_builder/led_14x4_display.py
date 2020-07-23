@@ -13,7 +13,7 @@ from simpleio                  import tone
 class Led14x4Display:
 
     def __init__(self, timezone="Pacific", hour_24=False, auto_dst=True,
-                 sound=False, brightness=1.0, debug=False):
+                 sound=False, brightness=1.0, address=0x70, debug=False):
         # Input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24
@@ -23,6 +23,7 @@ class Led14x4Display:
         self._colon      = True
         self._message    = "LED 14x4 Clock"
         self._brightness = brightness
+        self._address    = address
 
         self._weekday    = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         self._month      = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
@@ -39,12 +40,12 @@ class Led14x4Display:
         self._sel_sw = DigitalInOut(board.D9)
         self._sel_sw.direction = Direction.INPUT
         self._sel_sw.pull = Pull.UP
-        self._enc = enc.IncrementalEncoder(board.D5, board.D6)
+        self._enc = enc.IncrementalEncoder(board.D6, board.D5)
         # Piezo speaker
         self._piezo = board.D13  # Shared with L13 LED
         # Display
         i2c = board.I2C()
-        self._display = Seg14x4(i2c, address=0x70)
+        self._display = Seg14x4(i2c, address=self._address)
         self._display.brightness = brightness
         self._display.fill(0)  # Clear the display
         self._display.print("----")

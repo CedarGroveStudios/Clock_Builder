@@ -12,7 +12,7 @@ from simpleio                  import tone
 class Led7x4Display:
 
     def __init__(self, timezone="Pacific", hour_24=False, auto_dst=True,
-                 sound=False, brightness=1.0, debug=False):
+                 sound=False, brightness=1.0, address=0x70, debug=False):
         # Input parameters
         self._timezone   = timezone
         self._hour_24_12 = hour_24
@@ -22,6 +22,7 @@ class Led7x4Display:
         self._colon      = True
         self._message    = "    "
         self._brightness = brightness
+        self._address    = address
 
         self._param_list = [("1-12", 1, 12), ("1-31", 1, 31),
                             ("20--", 2010, 2037), ("0-23", 0, 23),
@@ -40,7 +41,7 @@ class Led7x4Display:
         self._piezo = board.D13  # Shared with L13 LED
         # Display
         i2c = board.I2C()
-        self._display = Seg7x4(i2c, address=0x70)
+        self._display = Seg7x4(i2c, address=self._address)
         self._display.brightness = brightness
         self._display.fill(0)  # Clear the display
         self._display.print("----")
