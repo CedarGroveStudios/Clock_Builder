@@ -19,7 +19,7 @@ class Led14x4DisplayDOW:
         self._brightness = brightness
         self._address    = address
 
-        self._weekday    = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        self._weekday    = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
 
         # Display
         i2c = board.I2C()
