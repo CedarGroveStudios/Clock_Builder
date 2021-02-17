@@ -6,7 +6,11 @@
 
 import time
 import board
-import adafruit_ds3231
+
+### Please pick your RTC hardware
+import adafruit_DS3231
+###import adafruit_pcf8523
+
 from   analogio import AnalogIn
 from   cedargrove_unit_converter.chronos        import adjust_dst
 from   cedargrove_clock_builder.repl_display    import ReplDisplay
@@ -15,7 +19,10 @@ from   cedargrove_clock_builder.pybadge_display import PyBadgeDisplay  # PyBadge
 # from   cedargrove_clock_builder.led_7x4seg      import Led7x4Display   # 7-segment LED
 
 i2c = board.I2C()
-ds3231 = adafruit_ds3231.DS3231(i2c)
+
+### Please pick your RTC hardware
+rtc = adafruit_ds3231.DS3231(i2c)
+###rtc = adafruit_pcf8523.PCF8523(i2c)
 
 batt = AnalogIn(board.A6)
 print("Battery: {:01.2f} volts".format((batt.value / 65520) * 6.6))
@@ -57,13 +64,13 @@ repl_disp = ReplDisplay(clock_zone, clock_24_hour, clock_auto_dst,
 ### HELPERS ###
 
 # Manually set time upon RTC power failure
-if ds3231.lost_power:
+if rtc.lost_power:
     print("--RTC POWER FAILURE--")
     # Set time with REPL
-    # ds3231.datetime = repl_disp.set_datetime()
+    # rtc.datetime = repl_disp.set_datetime()
 
     # Set time with PyBadge
-    pybadge_disp.show(ds3231.datetime)
+    pybadge_disp.show(rtc.datetime)
     pybadge_disp.message = "-RTC POWER FAILURE-"
 
 min_flag = half_flag = hour_flag = False
@@ -72,9 +79,9 @@ min_flag = half_flag = hour_flag = False
 if "pybadge" in clock_display:
     # Check datetime and adjust if DST
     if clock_auto_dst:             # read the RTC and adjust for DST
-        current, is_dst = adjust_dst(ds3231.datetime)
+        current, is_dst = adjust_dst(rtc.datetime)
     else:
-        current = ds3231.datetime  # otherwise, just read the RTC
+        current = rtc.datetime  # otherwise, just read the RTC
         is_dst = False
 
     pybadge_disp.dst = is_dst
@@ -83,9 +90,9 @@ if "pybadge" in clock_display:
 while True:
     # Check datetime and adjust if DST
     if clock_auto_dst:             # read the RTC and adjust for DST
-        current, is_dst = adjust_dst(ds3231.datetime)
+        current, is_dst = adjust_dst(rtc.datetime)
     else:
-        current = ds3231.datetime  # otherwise, just read the RTC
+        current = rtc.datetime  # otherwise, just read the RTC
         is_dst = False
 
     # update REPL display
@@ -103,9 +110,9 @@ while True:
         pybadge_disp.colon  = not pybadge_disp.colon  # auto-refresh
 
         # Check to see if time was set
-        new_xst_datetime, clock_sound, update_flag = pybadge_disp.set_datetime(ds3231.datetime)
+        new_xst_datetime, clock_sound, update_flag = pybadge_disp.set_datetime(rtc.datetime)
         if update_flag:  # If so, update RTC Std Time with new datetime
-           ds3231.datetime = new_xst_datetime
+           rtc.datetime = new_xst_datetime
            print("RTC time was set")
 
     # play tick sound
@@ -148,4 +155,4 @@ while True:
     # wait a second before looping
     prev_sec = current.tm_sec
     while current.tm_sec == prev_sec:  # wait a second before looping
-        current = ds3231.datetime
+        current = rtc.datetime
